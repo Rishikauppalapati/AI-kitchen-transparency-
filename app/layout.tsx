@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kitchen Transparency",
+  title: "Clear Kitchen",
   description: "See when a kitchen was last verified, what passed, and how any raid was resolved.",
 };
 

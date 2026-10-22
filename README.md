@@ -1,4 +1,6 @@
-# Kitchen Transparency (hackathon prototype)
+# Clear Kitchen (hackathon prototype)
+
+Working title: Kitchen Transparency.
 
 Restaurants do AI-checked kitchen check-ins in a manager view. Diners see the result in a diner view: when the kitchen was last verified, which checks passed, any past raid and how it was resolved. One Next.js web app, phone-first, deployable to Vercel.
 

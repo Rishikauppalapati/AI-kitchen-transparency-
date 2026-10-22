@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import BottomNav, { type NavItem } from "@/components/BottomNav";
+import Brand from "@/components/Brand";
 import DemoPanel from "@/components/DemoPanel";
 import DeliveryPage from "@/components/diner/DeliveryPage";
 import DiningList from "@/components/diner/DiningList";
@@ -176,6 +177,7 @@ function Shell() {
 
   return (
     <PhoneFrame>
+      <Brand />
       <main className="screen" aria-label={ui.role === "diner" ? "Diner app" : "Manager app"}>
         {ui.role === "diner" ? renderDiner() : renderManager()}
       </main>

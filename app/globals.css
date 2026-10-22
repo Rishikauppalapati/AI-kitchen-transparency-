@@ -100,6 +100,53 @@ button {
   }
 }
 
+/* ---------- Logo bar: centred at the top of every screen ---------- */
+
+.brandbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 8px 64px; /* side room keeps the logo clear of the bell on the right */
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transform: rotate(-1.5deg); /* a little tilt, on purpose */
+}
+
+.brand svg {
+  flex: none;
+  filter: drop-shadow(0 2px 2px rgba(19, 78, 74, 0.2));
+}
+
+.brand-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.brand-clear {
+  padding: 5px 9px 6px;
+  border-radius: 10px 10px 10px 3px;
+  background: var(--teal);
+  color: #fff;
+  transform: rotate(-3deg);
+}
+
+.brand-kitchen {
+  color: var(--text);
+}
+
 .screen {
   flex: 1;
   overflow-y: auto;
@@ -112,8 +159,8 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 64px;
-  padding: 12px 0 8px;
+  min-height: 56px;
+  padding: 10px 0 6px;
 }
 
 .appbar h1 {
@@ -1066,7 +1113,7 @@ button {
 
 .bell {
   position: absolute;
-  top: 12px;
+  top: 8px; /* centred in the 60px logo bar */
   right: 14px;
   z-index: 15;
 }
