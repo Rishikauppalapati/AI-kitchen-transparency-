@@ -16,6 +16,13 @@
   --radius-sm: 12px;
   --shadow: 0 1px 2px rgba(23, 48, 45, 0.06), 0 6px 18px rgba(23, 48, 45, 0.08);
   --nav-h: 68px;
+  --input-border: #6f7d7a; /* at least 3:1 against the page and cards, so form fields are visible */
+  color-scheme: light; /* the theme is light only; this keeps form controls and scrollbars matching */
+}
+
+::placeholder {
+  color: var(--muted); /* the browser default is 4.2:1, just under the 4.5:1 target */
+  opacity: 1;
 }
 
 * {
@@ -431,7 +438,7 @@ button {
   width: 100%;
   min-height: 48px;
   padding: 0 12px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--input-border);
   border-radius: var(--radius-sm);
   background: var(--card);
 }
@@ -679,7 +686,7 @@ button {
 .textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--input-border);
   border-radius: var(--radius-sm);
   background: var(--card);
   resize: vertical;

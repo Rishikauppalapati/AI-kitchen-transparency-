@@ -48,4 +48,34 @@ Still missing (12): `caps_gloves_tidy`, `floors_tidy`, `labels_tidy`, `bins_tidy
 
 ## Deploy to Vercel
 
-Import the GitHub repo in Vercel and add `GEMINI_API_KEY` under Settings, Environment Variables. Photos are limited to 4 MB per request.
+You do these steps yourself in your own accounts. The key never goes in the code or the repo.
+
+1. **Put the code on GitHub** (a private repo is fine; the data is all sample data). `.env.local` is git-ignored, so the key is not uploaded.
+2. **Import it in Vercel:** vercel.com, Add New, Project, pick the repo. Vercel detects Next.js; keep the defaults.
+3. **Add the key before the first deploy:** in the import screen (or later under Settings, Environment Variables) add `GEMINI_API_KEY` with your key, for Production, Preview and Development. Do not name it `NEXT_PUBLIC_...`: that prefix would send it to the browser.
+4. **Deploy**, then open the URL on your phone. Try: Demo controls, Manager, Dining check, a demo photo, sign off with code 1234, then switch to Diner.
+5. **If a photo check says it can't reach the AI**, check the key in Vercel's settings and redeploy (a changed variable only applies to new deployments).
+
+Good to know:
+- Photos are shrunk to 1024px in the browser and limited to 4 MB per request (Vercel's request limit is 4.5 MB).
+- The AI route may run for up to 30 seconds (`maxDuration` in `app/api/check/route.ts`).
+- Demo state is saved per browser (localStorage), so the manager and diner views must be opened in the same browser, which the demo panel's role switch does.
+- Google's Gemini capacity varies; if answers are slow, the demo photos and their simulated fallback keep the demo moving.
+- Rotate the Gemini key after the hackathon.
+
+## What has been verified
+
+| Test | Result |
+|---|---|
+| T1 A tidy demo photo turns its tile green | Yes with `handwash_tidy` through the real AI; other tidy photos are missing, so their green result is simulated |
+| T2 An untidy photo turns amber with a note and Retake | Yes, real AI |
+| T3 With an amber or unfinished tile, "Last verified" does not change | Yes |
+| T4 All six green plus OTP 1234 updates the diner page | Yes (production build) |
+| T5 Three failed attempts raise "Flagged for review" | Yes, manager side only |
+| T6 Fast-forward makes the diner page stale | Yes |
+| T7 Delivery setup and pack checks; a failed setup changes nothing | Yes |
+| T8 The three raid states | Yes |
+| T9 Not-a-kitchen, a PDF and an oversized file | Yes, clear message, nothing changes |
+| T10 The key appears nowhere except `.env.local` | Yes: project files, production build, downloaded files, API responses, headers and git history |
+
+Accessibility: text contrast is at least 4.5:1 for every colour pair (checked by calculation), form field borders at least 3:1, every tap target at least 44px on every screen and sheet, every control has a name, status never relies on colour alone, bottom sheets trap and restore keyboard focus, and the banner respects reduced-motion settings.
