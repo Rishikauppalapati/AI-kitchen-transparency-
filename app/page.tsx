@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import AppBar from "@/components/AppBar";
 import BottomNav, { type NavItem } from "@/components/BottomNav";
-import ComingSoon from "@/components/ComingSoon";
 import DemoPanel from "@/components/DemoPanel";
 import DeliveryPage from "@/components/diner/DeliveryPage";
 import DiningList from "@/components/diner/DiningList";
 import NewsPage from "@/components/diner/NewsPage";
 import ReportPage from "@/components/diner/ReportPage";
 import RestaurantDetail from "@/components/diner/RestaurantDetail";
+import ComplaintsInbox from "@/components/manager/ComplaintsInbox";
+import DeliveryCheck from "@/components/manager/DeliveryCheck";
+import DiningCheck from "@/components/manager/DiningCheck";
 import ManagerHome from "@/components/manager/ManagerHome";
 import PhoneFrame from "@/components/PhoneFrame";
 import { restaurants } from "@/data/restaurants";
@@ -38,6 +39,7 @@ interface UiState {
   managerTab: ManagerTab;
   restaurantId: string;
   openRestaurant: boolean; // diner is viewing one restaurant's page
+  showExpected: boolean; // demo photos show their expected AI result
 }
 
 const DEFAULTS: UiState = {
@@ -46,6 +48,7 @@ const DEFAULTS: UiState = {
   managerTab: "home",
   restaurantId: restaurants[0].id,
   openRestaurant: false,
+  showExpected: false,
 };
 
 export default function Home() {
@@ -116,28 +119,20 @@ export default function Home() {
   function renderManager() {
     switch (ui.managerTab) {
       case "home":
-        return <ManagerHome restaurant={restaurant} onGo={(tab) => patch({ managerTab: tab })} />;
+        return (
+          <ManagerHome
+            key={restaurant.id}
+            restaurant={restaurant}
+            onGo={(tab) => patch({ managerTab: tab })}
+            onPreview={() => patch({ role: "diner", dinerTab: "dining", openRestaurant: true })}
+          />
+        );
       case "dining":
-        return (
-          <>
-            <AppBar title="Dining check" subtitle={restaurant.name} />
-            <ComingSoon icon="dining" title="Six check tiles and OTP sign-off" step={3} items={["Five photo tiles judged by AI, one typed fridge reading", "Retake notes and documents-due chip", "Sign off with OTP (demo code 1234)"]} />
-          </>
-        );
+        return <DiningCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} />;
       case "delivery":
-        return (
-          <>
-            <AppBar title="Delivery check" subtitle={restaurant.name} />
-            <ComingSoon icon="delivery" title="Setup, random pack check, handled for you" step={3} items={["Shift setup: three photo checks, twice a day", "Random pack check with a 10-minute countdown", "Simulated rider and handover data"]} />
-          </>
-        );
+        return <DeliveryCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} />;
       case "complaints":
-        return (
-          <>
-            <AppBar title="Complaints" subtitle={restaurant.name} />
-            <ComingSoon icon="inbox" title="Complaints inbox" step={3} items={["Category and seal status for each complaint", "Record the fix (text and photo)", "Resolving updates the diner's history"]} />
-          </>
-        );
+        return <ComplaintsInbox key={restaurant.id} restaurant={restaurant} />;
     }
   }
 
@@ -153,6 +148,8 @@ export default function Home() {
         restaurants={restaurants}
         restaurantId={ui.restaurantId}
         onRestaurant={(id) => patch({ restaurantId: id, openRestaurant: false })}
+        showExpected={ui.showExpected}
+        onShowExpected={(showExpected) => patch({ showExpected })}
       />
 
       {ui.role === "diner" ? (

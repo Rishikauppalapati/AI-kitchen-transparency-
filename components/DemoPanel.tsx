@@ -13,12 +13,16 @@ export default function DemoPanel({
   restaurants,
   restaurantId,
   onRestaurant,
+  showExpected,
+  onShowExpected,
 }: {
   role: Role;
   onRole: (r: Role) => void;
   restaurants: Restaurant[];
   restaurantId: string;
   onRestaurant: (id: string) => void;
+  showExpected: boolean;
+  onShowExpected: (on: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -65,8 +69,20 @@ export default function DemoPanel({
             ))}
           </select>
 
+          <span className="field-label" id="expected-label">Show expected AI result</span>
+          <button
+            type="button"
+            className="seg-btn full-seg"
+            aria-pressed={showExpected}
+            aria-labelledby="expected-label"
+            onClick={() => onShowExpected(!showExpected)}
+          >
+            {showExpected && <Icon name="check" size={16} />}
+            {showExpected ? "On" : "Off"}
+          </button>
+
           <p className="muted" style={{ marginTop: 16 }}>
-            More controls (demo clock, notifications, expected AI result, Reset demo) arrive in step 4.
+            More controls (demo clock, notifications, Reset demo) arrive in step 4.
           </p>
         </Sheet>
       )}
