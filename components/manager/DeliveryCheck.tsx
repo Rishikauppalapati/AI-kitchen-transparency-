@@ -184,8 +184,8 @@ export default function DeliveryCheck({
             if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
             else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}
-          onError={() => {
-            const tile = errorTile();
+          onError={(wait) => {
+            const tile = errorTile(wait);
             if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
             else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}

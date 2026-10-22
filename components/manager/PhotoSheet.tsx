@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "../Icons";
 import Sheet from "../Sheet";
+import { CHECK_HELP } from "@/lib/checkHelp";
 import { checkPhoto } from "@/lib/checkPhoto";
 import { demoPath, demoPhotoExists, demoPhotosFor, demoUrl, expectedText, loadDemoPhoto, type DemoPhoto } from "@/lib/demoPhotos";
 import type { AiResult } from "@/lib/types";
@@ -22,7 +23,7 @@ export default function PhotoSheet({
   title: string;
   showExpected: boolean;
   onResult: (r: AiResult) => void;
-  onError: () => void; // the AI or network failed: the tile turns amber
+  onError: (retryAfterSeconds?: number) => void; // the AI or network failed: the tile turns amber
   onClose: () => void;
 }) {
   const photos = demoPhotosFor(checkId);
@@ -55,7 +56,7 @@ export default function PhotoSheet({
       onResult(outcome.result);
       onClose();
     } else if (outcome.kind === "error") {
-      onError();
+      onError(outcome.retryAfterSeconds);
       onClose();
     } else {
       setProblem(outcome.message); // a bad file: say so, change nothing, keep the sheet open
@@ -88,8 +89,27 @@ export default function PhotoSheet({
 
   const chosen = photos.find((p) => p.name === choice);
 
+  const help = CHECK_HELP[checkId];
+
   return (
     <Sheet title={title} onClose={onClose}>
+      {help && (
+        <section className="check-help" aria-label="What the AI checks">
+          <h3>What the AI checks</h3>
+          <p>
+            <Icon name="check" size={16} /> <strong>Passes:</strong> {help.pass}
+          </p>
+          <p>
+            <Icon name="alert" size={16} /> <strong>Fails:</strong> {help.fail}
+          </p>
+          <p className="muted">{help.tip} Use good light and hold still.</p>
+          <p className="muted">
+            If the AI says &quot;Photo doesn&apos;t show this&quot;, the item wasn&apos;t in the picture. That is not a fail: just retake it showing the item.
+            If it says it was busy, that is not a fail either: tap the tile and send the photo again.
+          </p>
+        </section>
+      )}
+
       <div className="photo-options">
         <label className="btn btn-primary file-btn" aria-disabled={busy}>
           <Icon name="camera" size={20} />

@@ -6,7 +6,9 @@ import type { AiResult } from "@/lib/types";
 export const maxDuration = 30;
 
 // "invalid" = the upload itself is the problem (nothing changes). "ai" = the AI service failed.
-type Body = { ok: true; result: AiResult } | { ok: false; kind: "invalid" | "ai"; message: string };
+type Body =
+  | { ok: true; result: AiResult }
+  | { ok: false; kind: "invalid" | "ai"; message: string; retryAfterSeconds?: number };
 const reply = (body: Body, status = 200) => Response.json(body, { status });
 
 export async function POST(request: Request) {
@@ -41,6 +43,7 @@ export async function POST(request: Request) {
     return reply({ ok: true, result });
   } catch (err) {
     const message = err instanceof AiError ? err.message : "Something went wrong. Please try again.";
-    return reply({ ok: false, kind: "ai", message }, 502);
+    const retryAfterSeconds = err instanceof AiError ? err.retryAfterSeconds : undefined;
+    return reply({ ok: false, kind: "ai", message, retryAfterSeconds }, retryAfterSeconds ? 429 : 502);
   }
 }

@@ -89,7 +89,7 @@ export default function DiningCheck({
           title={DINING_CHECKS.find((c) => c.id === open.id)?.label ?? "Photo check"}
           showExpected={showExpected}
           onResult={(r) => setTile(open.id, tileFromAi(r))}
-          onError={() => setTile(open.id, errorTile())}
+          onError={(wait) => setTile(open.id, errorTile(wait))}
           onClose={() => setOpen(null)}
         />
       )}

@@ -32,8 +32,11 @@ export function tileFromAi(result: AiResult): TileState {
 }
 
 // An AI or network failure also turns the tile amber with a Retake button (rule 1).
-export function errorTile(): TileState {
-  return { state: "retake", note: "Couldn't check, try again", error: true };
+export function errorTile(retryAfterSeconds?: number): TileState {
+  const note = retryAfterSeconds
+    ? `AI usage limit reached. Not a fail: retry in about ${retryAfterSeconds} s`
+    : "AI was busy. Not a fail: retry";
+  return { state: "retake", note, error: true };
 }
 
 // ---------- Uploads and AI replies (shared by the browser and the server) ----------

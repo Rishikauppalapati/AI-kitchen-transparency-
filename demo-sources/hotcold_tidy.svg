@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" viewBox="0 0 1024 768" font-family="Arial, Helvetica, sans-serif"><defs>
+  <pattern id="tiles" width="64" height="64" patternUnits="userSpaceOnUse"><rect width="64" height="64" fill="#e6eef1"/><path d="M0 0H64M0 0V64" stroke="#cbd8dd" stroke-width="2"/></pattern>
+  <pattern id="floor" width="96" height="96" patternUnits="userSpaceOnUse"><rect width="96" height="96" fill="#e4e2dc"/><path d="M0 0H96M0 0V96" stroke="#c7c4bb" stroke-width="3"/></pattern>
+  <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f4"/><stop offset="1" stop-color="#a9b4bb"/></linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9b88a"/><stop offset="1" stop-color="#b98f5c"/></linearGradient>
+  <filter id="stain" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="30"/><feGaussianBlur stdDeviation="1.6"/></filter>
+  <filter id="splat" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="9"/></filter>
+</defs><rect width="1024" height="520" fill="url(#tiles)"/><rect y="520" width="1024" height="248" fill="url(#floor)"/><rect y="516" width="1024" height="8" fill="#b8c4c9"/>
+  <path d="M170 330q0 -80 70 -80t70 80" fill="none" stroke="#444" stroke-width="12"/>
+  <rect x="110" y="330" width="260" height="280" rx="24" fill="#c9372c" stroke="#7d1d16" stroke-width="6"/>
+  <text x="240" y="450" font-size="70" font-weight="900" fill="#fff" text-anchor="middle">HOT</text><text x="240" y="520" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">biryani, curry</text>
+  <path d="M200 300q-14 -26 0 -52t0 -50" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.9"/><path d="M240 300q-14 -26 0 -52t0 -50" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.9"/><path d="M280 300q-14 -26 0 -52t0 -50" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.9"/>
+  <path d="M720 330q0 -80 70 -80t70 80" fill="none" stroke="#444" stroke-width="12"/>
+  <rect x="660" y="330" width="260" height="280" rx="24" fill="#2b72c9" stroke="#18407a" stroke-width="6"/>
+  <text x="790" y="450" font-size="70" font-weight="900" fill="#fff" text-anchor="middle">COLD</text><text x="790" y="520" font-size="26" font-weight="700" fill="#fff" text-anchor="middle">ice cream, drinks</text>
+  <path d="M790 270v-50M765 245l50 0M772 224l36 42M808 224l-36 42" stroke="#cfe8ff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M420 480h220" stroke="#7a8a92" stroke-width="6" stroke-dasharray="14 12"/><text x="530" y="460" font-size="26" font-weight="700" fill="#456" text-anchor="middle">kept apart</text></svg>
