@@ -34,10 +34,15 @@ Files in `public/demo/` today:
 | `caps_gloves_untidy.jpg` | Pexels, [Maxence Ambert](https://www.pexels.com/photo/commercial-kitchen-in-a-restaurant-21661595/) | amber: no caps or gloves |
 | `labels_untidy.jpg` | same photo as above | amber: no date labels |
 | `floors_untidy.jpg` | Pexels, [Alexander F Ungerer](https://www.pexels.com/photo/interior-of-a-messy-kitchen-20374786/) | amber: items on the floor |
+| `handwash_tidy.jpg` | Pexels, [ready made](https://www.pexels.com/photo/stainless-steel-faucet-turned-off-3847573/) | green: soap dispenser and basin visible |
+| `handwash_untidy.jpg` | Pexels, [Karola G](https://www.pexels.com/photo/washing-hands-in-sink-5240613/) | amber: no soap visible |
+| `bins_untidy.jpg` | Pexels, [Markus Spiske](https://www.pexels.com/photo/black-trash-bin-with-full-of-trash-3806764/) | amber: bin overflowing, lid open |
 | `not_a_kitchen.jpg` | drawn by us | amber: photo doesn't show this |
 | `blurry_dark.jpg` | made from the first photo, darkened and blurred | amber: photo doesn't show this |
 
-Still missing (15): `caps_gloves_tidy`, `floors_tidy`, `labels_tidy`, `bins_tidy`, `bins_untidy`, `handwash_tidy`, `handwash_untidy`, `seals_tidy`, `seals_untidy`, `bags_tidy`, `bags_untidy`, `hotcold_tidy`, `hotcold_untidy`, `pack_tidy`, `pack_untidy`. Add a clear, well-lit JPEG with the exact name and it is picked up automatically. A "tidy" photo must clearly satisfy the check (for example, everyone visible wearing caps and gloves) or the AI will rightly say it does not pass.
+Each of these gave the expected result on repeated real-AI runs. A photo that did not (the chefs photo for `caps_gloves_tidy`, and a row of alley dumpsters for `bins_tidy`, which the AI judged as having open lids) was removed.
+
+Still missing (12): `caps_gloves_tidy`, `floors_tidy`, `labels_tidy`, `bins_tidy`, `seals_tidy`, `seals_untidy`, `bags_tidy`, `bags_untidy`, `hotcold_tidy`, `hotcold_untidy`, `pack_tidy`, `pack_untidy`. Add a clear, well-lit JPEG with the exact name and it is picked up automatically. A "tidy" photo must clearly satisfy the check (for example, everyone visible wearing caps and gloves) or the AI will rightly say it does not pass.
 
 `test-photos/` holds the original Pexels downloads (also credited to [Gaurav Ranjitkar](https://www.pexels.com/photo/cooks-preparing-food-in-a-restaurant-kitchen-15323383/) for `tidy-1.png`).
 
