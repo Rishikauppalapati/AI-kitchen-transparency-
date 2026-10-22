@@ -52,6 +52,31 @@ export function demoPhotosFor(checkId: string): DemoPhoto[] {
   return [...CHECK_PHOTOS.filter((p) => p.checkId === checkId), ...BAD_INPUTS(checkId)];
 }
 
+// Demo images are plain JPEG files in public/demo/, named exactly like the list above.
+export const demoUrl = (name: string) => `/demo/${name}.jpg`;
+export const demoPath = (name: string) => `public/demo/${name}.jpg`;
+
+// Is the file there? (Browser only.) A missing file must never crash the screen.
+export async function demoPhotoExists(name: string): Promise<boolean> {
+  try {
+    const res = await fetch(demoUrl(name), { method: "HEAD" });
+    return res.ok && (res.headers.get("content-type") ?? "").startsWith("image/");
+  } catch {
+    return false;
+  }
+}
+
+// Fetch the image as a File, ready for the same check that Upload uses. Null if it is missing.
+export async function loadDemoPhoto(name: string): Promise<File | null> {
+  try {
+    const res = await fetch(demoUrl(name));
+    if (!res.ok || !(res.headers.get("content-type") ?? "").startsWith("image/")) return null;
+    return new File([await res.blob()], `${name}.jpg`, { type: "image/jpeg" });
+  } catch {
+    return null;
+  }
+}
+
 export function expectedText(r: AiResult): string {
   return r.relevant && r.status === "pass" ? "Expected: green" : "Expected: amber, retake";
 }
