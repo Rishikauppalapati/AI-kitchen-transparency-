@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kitchen Transparency (hackathon MVP)
 
-## Getting Started
+A restaurant manager uploads one kitchen photo. Gemini reads it, and the diner's page for that restaurant updates, next to the raid and fix history. All restaurants are made-up sample data.
 
-First, run the development server:
+## Run it
+
+1. Get a Gemini API key from https://aistudio.google.com/apikey (it starts with `AIza`).
+2. Copy `.env.example` to `.env.local` and paste the key after `GEMINI_API_KEY=`. Never put the key in code and never commit `.env.local` (git already ignores it).
+3. Install and start:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/page.tsx`: the one screen (manager panel on the left, diner view on the right).
+- `app/api/check/route.ts`: receives the photo on the server.
+- `lib/gemini.ts`: the only place Gemini is called and the question it is asked.
+- `lib/rules.ts`: plain-code rules (upload checks, "retake" decision, evidence level).
+- `data/restaurants.json`: sample restaurants and raid records.
+- Results are saved in your browser (`localStorage`), so the demo works on one device.
 
-## Learn More
+## Test photos
 
-To learn more about Next.js, take a look at the following resources:
+`test-photos/` holds free Pexels photos for trying the check-in (none is a perfect "all pass" example):
+- `tidy-1.png`: [Gaurav Ranjitkar](https://www.pexels.com/photo/cooks-preparing-food-in-a-restaurant-kitchen-15323383/)
+- `tidy-2.jpg`: [Maxence Ambert](https://www.pexels.com/photo/commercial-kitchen-in-a-restaurant-21661595/)
+- `messy-1.jpg`: [Alexander F Ungerer](https://www.pexels.com/photo/interior-of-a-messy-kitchen-20374786/)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Import the GitHub repo in Vercel and add `GEMINI_API_KEY` under Settings, Environment Variables.

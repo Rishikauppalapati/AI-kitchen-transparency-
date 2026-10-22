@@ -1,69 +1,59 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useEffect, useState } from "react";
+import KitchenPage from "@/components/KitchenPage";
+import ManagerCheckin from "@/components/ManagerCheckin";
+import restaurantData from "@/data/restaurants.json";
+import { loadChecks, saveCheck, type CheckMap } from "@/lib/store";
+import type { Restaurant, StoredCheck } from "@/lib/types";
+
+const restaurants = restaurantData as Restaurant[];
 
 export default function Home() {
+  const [restaurantId, setRestaurantId] = useState(restaurants[0].id);
+  // Checks saved in this browser by earlier check-ins, filled in after the page loads.
+  const [saved, setSaved] = useState<CheckMap>({});
+
+  useEffect(() => {
+    // localStorage only exists in the browser, so we read it after the first render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSaved(loadChecks());
+  }, []);
+
+  const restaurant = restaurants.find((r) => r.id === restaurantId) ?? restaurants[0];
+  const check = saved[restaurant.id] ?? restaurant.seedCheck;
+
+  function handleVerified(newCheck: StoredCheck) {
+    setSaved(saveCheck(restaurant.id, newCheck));
+  }
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main>
+      <header>
+        <h1>Kitchen Transparency</h1>
+        <p className="muted">
+          Sample data. Restaurants shown here are made up for the demo.
+        </p>
+        <label className="field picker">
+          <span>Restaurant</span>
+          <select value={restaurantId} onChange={(e) => setRestaurantId(e.target.value)}>
+            {restaurants.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </header>
+
+      <div className="split">
+        <ManagerCheckin
+          restaurantId={restaurant.id}
+          restaurantName={restaurant.name}
+          onVerified={handleVerified}
         />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <KitchenPage restaurant={restaurant} check={check} />
+      </div>
+    </main>
   );
 }

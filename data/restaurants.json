@@ -1,0 +1,65 @@
+[
+  {
+    "id": "sample-spice-garden",
+    "name": "Spice Garden (sample)",
+    "area": "Banjara Hills, Hyderabad",
+    "raids": [
+      {
+        "date": "2026-09-12",
+        "reported": [
+          "Pest-control records missing",
+          "Medical fitness certificates for staff not available",
+          "Food items stored without date labels"
+        ],
+        "sourceLabel": "Official post (sample link, replace with the real post URL)",
+        "sourceUrl": "https://x.com/CMC_Offcl",
+        "fixes": [
+          {
+            "date": "2026-09-26",
+            "what": "Pest-control contract signed and logbook started",
+            "proof": "Contract copy and first service report uploaded by the manager"
+          },
+          {
+            "date": "2026-10-03",
+            "what": "Fitness certificates renewed for all kitchen staff",
+            "proof": "Certificates uploaded by the manager"
+          }
+        ]
+      }
+    ],
+    "seedCheck": {
+      "at": "2026-10-20T07:30:00.000Z",
+      "signedBy": "Sample manager",
+      "summary": "Sample record: staff in caps and gloves, bins covered, most items labelled.",
+      "confidence": 0.8,
+      "checks": [
+        { "id": "caps_gloves", "status": "ok", "note": "Sample data" },
+        { "id": "bin_lids", "status": "ok", "note": "Sample data" },
+        { "id": "labels_dates", "status": "problem", "note": "Sample data: one tray had no date label" }
+      ]
+    }
+  },
+  {
+    "id": "sample-biryani-house",
+    "name": "Biryani House (sample)",
+    "area": "Gachibowli, Hyderabad",
+    "raids": [
+      {
+        "date": "2026-10-02",
+        "reported": [
+          "Kitchen sealed after inspection",
+          "Samples sent for lab testing, results awaited"
+        ],
+        "sourceLabel": "Official post (sample link, replace with the real post URL)",
+        "sourceUrl": "https://x.com/CMC_Offcl",
+        "fixes": []
+      }
+    ]
+  },
+  {
+    "id": "sample-green-leaf-cafe",
+    "name": "Green Leaf Cafe (sample)",
+    "area": "Madhapur, Hyderabad",
+    "raids": []
+  }
+]
