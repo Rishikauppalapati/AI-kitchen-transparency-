@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BottomNav, { type NavItem } from "@/components/BottomNav";
 import DemoPanel from "@/components/DemoPanel";
 import DeliveryPage from "@/components/diner/DeliveryPage";
@@ -16,6 +16,8 @@ import { NotificationBanner, NotificationBell } from "@/components/manager/Notif
 import PhoneFrame from "@/components/PhoneFrame";
 import { restaurants } from "@/data/restaurants";
 import { AppProvider, useApp } from "@/lib/AppState";
+import { AUTO_NOTIFY_MS, AUTO_SEQUENCE } from "@/lib/notifications";
+import { PACK_PER_DAY, packToday } from "@/lib/state";
 import type { DinerTab, ManagerTab, Role } from "@/lib/types";
 
 const DINER_NAV: NavItem<DinerTab>[] = [
@@ -41,6 +43,7 @@ interface UiState {
   restaurantId: string;
   openRestaurant: boolean; // diner is viewing one restaurant's page
   showExpected: boolean; // demo photos show their expected AI result
+  autoNotify: boolean; // a reminder pops up by itself on a timer while in the Manager view
 }
 
 const DEFAULTS: UiState = {
@@ -50,6 +53,7 @@ const DEFAULTS: UiState = {
   restaurantId: restaurants[0].id,
   openRestaurant: false,
   showExpected: false,
+  autoNotify: true,
 };
 
 export default function Home() {
@@ -61,9 +65,33 @@ export default function Home() {
 }
 
 function Shell() {
-  const { reset } = useApp();
+  const { data, now, act, reset } = useApp();
   const [ui, setUi] = useState<UiState>(DEFAULTS);
   const [ready, setReady] = useState(false);
+
+  // Auto notifications (for showing the app to someone): while in the Manager view, one reminder pops up
+  // on a timer, cycling through the list. It skips a pack check that can't start, and waits while a sheet is open.
+  const latest = useRef({ data, now, act });
+  useEffect(() => {
+    latest.current = { data, now, act };
+  });
+  const autoIndex = useRef(0);
+  useEffect(() => {
+    if (!ready || !ui.autoNotify || ui.role !== "manager") return;
+    const id = setInterval(() => {
+      if (document.querySelector(".sheet")) return; // don't pop over something the presenter is using
+      const { data, now, act } = latest.current;
+      const rd = data.restaurants[ui.restaurantId];
+      const packBlocked = rd.packPendingSince !== null || packToday(rd, now).results.length >= PACK_PER_DAY;
+      for (let tries = 0; tries < AUTO_SEQUENCE.length; tries++) {
+        const slot = AUTO_SEQUENCE[autoIndex.current++ % AUTO_SEQUENCE.length];
+        if (slot.startsWith("pack") && packBlocked) continue;
+        act({ type: "notify", rid: ui.restaurantId, slot });
+        return;
+      }
+    }, AUTO_NOTIFY_MS);
+    return () => clearInterval(id);
+  }, [ready, ui.autoNotify, ui.role, ui.restaurantId]);
 
   // Read saved state after the first render (localStorage only exists in the browser).
   useEffect(() => {
@@ -165,6 +193,8 @@ function Shell() {
         onRestaurant={(id) => patch({ restaurantId: id, openRestaurant: false })}
         showExpected={ui.showExpected}
         onShowExpected={(showExpected) => patch({ showExpected })}
+        autoNotify={ui.autoNotify}
+        onAutoNotify={(autoNotify) => patch({ autoNotify })}
         onReset={() => {
           reset();
           setUi(DEFAULTS);

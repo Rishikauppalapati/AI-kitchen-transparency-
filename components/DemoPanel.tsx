@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Icon } from "./Icons";
 import Sheet from "./Sheet";
 import { useApp } from "@/lib/AppState";
-import { MANUAL_SLOTS } from "@/lib/notifications";
+import { AUTO_NOTIFY_MS, MANUAL_SLOTS } from "@/lib/notifications";
 import { PACK_PER_DAY, packToday } from "@/lib/state";
 import { DAY, HOUR } from "@/lib/time";
 import type { Restaurant, Role } from "@/lib/types";
@@ -25,6 +25,8 @@ export default function DemoPanel({
   onRestaurant,
   showExpected,
   onShowExpected,
+  autoNotify,
+  onAutoNotify,
   onReset,
 }: {
   role: Role;
@@ -34,6 +36,8 @@ export default function DemoPanel({
   onRestaurant: (id: string) => void;
   showExpected: boolean;
   onShowExpected: (on: boolean) => void;
+  autoNotify: boolean;
+  onAutoNotify: (on: boolean) => void;
   onReset: () => void;
 }) {
   const { data, now, act } = useApp();
@@ -86,6 +90,8 @@ export default function DemoPanel({
             ))}
           </select>
 
+          {role === "manager" ? (
+            <>
           <span className="field-label" id="clock-label">Demo clock</span>
           <p className="muted" style={{ margin: "0 0 8px" }} aria-live="polite">
             {new Date(now).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}{" "}
@@ -109,6 +115,21 @@ export default function DemoPanel({
             {showExpected ? "On" : "Off"}
           </button>
 
+          <span className="field-label" id="auto-label">Auto notifications</span>
+          <button
+            type="button"
+            className="seg-btn full-seg"
+            aria-pressed={autoNotify}
+            aria-labelledby="auto-label"
+            onClick={() => onAutoNotify(!autoNotify)}
+          >
+            {autoNotify && <Icon name="check" size={16} />}
+            {autoNotify ? `On: a new one every ${AUTO_NOTIFY_MS / 1000} seconds` : "Off"}
+          </button>
+          <p className="muted" style={{ margin: "6px 0 0" }}>
+            While you are in the Manager view, a reminder pops up by itself on a timer. They pause while a sheet is open. Turn this off, or press any button below to show one on demand.
+          </p>
+
           <span className="field-label" id="trigger-label">Trigger a notification</span>
           <div className="trigger-grid" role="group" aria-labelledby="trigger-label">
             {MANUAL_SLOTS.map((s) => (
@@ -129,6 +150,12 @@ export default function DemoPanel({
                 : "Shows a banner for this restaurant. A pack check also starts its 10-minute countdown."}{" "}
             The same reminders also fire by themselves as the demo clock passes their time.
           </p>
+            </>
+          ) : (
+            <p className="muted" style={{ margin: "14px 0 0" }}>
+              The demo clock, notifications and AI result options appear when you switch to Manager.
+            </p>
+          )}
 
           <span className="field-label">Start over</span>
           <button
