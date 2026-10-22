@@ -1,62 +1,36 @@
-// Shared shapes used by the server and the screen.
+// Shared shapes. Kept small on purpose; later steps add check and snapshot types.
 
-export type CheckId = "caps_gloves" | "bin_lids" | "labels_dates";
-export type CheckStatus = "ok" | "problem" | "cannot_tell";
+export type Role = "manager" | "diner";
+export type DinerTab = "dining" | "delivery" | "news" | "report";
+export type ManagerTab = "home" | "dining" | "delivery" | "complaints";
 
-export const CHECK_LABELS: Record<CheckId, string> = {
-  caps_gloves: "Staff wearing caps and gloves",
-  bin_lids: "Bin lids closed",
-  labels_dates: "Labels and dates visible",
-};
-
-export interface CheckItem {
-  id: CheckId;
-  status: CheckStatus;
-  note: string;
-}
-
-// What Gemini sends back (after our code has validated it).
-export interface GeminiResult {
-  usable: boolean;
-  reason: string;
-  confidence: number; // 0 to 1
-  summary: string;
-  checks: CheckItem[];
-}
-
-// What we save for a restaurant after a successful check-in.
-export interface StoredCheck {
-  at: string; // ISO date-time
-  signedBy: string;
-  summary: string;
-  confidence: number;
-  checks: CheckItem[];
-}
+export type RaidState = "resolved" | "unresolved" | "none";
+export type HeroTone = "teal" | "amber" | "slate";
 
 export interface Fix {
   date: string;
   what: string;
-  proof: string;
+  evidence: string;
+  evidenceLevel: 1 | 2 | 3; // 1 photo, 2 sensor or document, 3 auditor
 }
 
 export interface Raid {
-  date: string;
-  reported: string[];
+  reportedOn: string;
+  reported: string[]; // always worded "reported"
+  action: string;
+  fixes: Fix[];
+  recheck?: { date: string; result: string };
   sourceLabel: string;
   sourceUrl: string;
-  fixes: Fix[];
 }
 
 export interface Restaurant {
   id: string;
   name: string;
   area: string;
-  raids: Raid[];
-  seedCheck?: StoredCheck;
+  cuisine: string;
+  tone: HeroTone;
+  raidState: RaidState;
+  raid?: Raid;
+  streakDays: number;
 }
-
-// Response of POST /api/check
-export type CheckResponse =
-  | { status: "verified"; check: StoredCheck }
-  | { status: "retake"; reason: string }
-  | { status: "error"; message: string };
