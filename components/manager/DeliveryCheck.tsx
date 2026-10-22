@@ -1,30 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppBar from "../AppBar";
 import { Icon } from "../Icons";
 import CheckTile from "./CheckTile";
 import PhotoSheet from "./PhotoSheet";
-import { allChecked, tileFromAi, TODO } from "@/lib/rules";
-import type { Restaurant, TileState } from "@/lib/types";
+import { SETUP_CHECKS } from "@/lib/checkLabels";
+import { useApp } from "@/lib/AppState";
+import { allChecked, tileFromAi } from "@/lib/rules";
+import { PACK_PER_DAY, packSecondsLeft, packToday, SHIFTS, type Shift } from "@/lib/state";
+import { timeAgo } from "@/lib/time";
+import type { Restaurant } from "@/lib/types";
 
-const SETUP_CHECKS = [
-  { id: "setup_seals", label: "Seals stocked", icon: "shield" },
-  { id: "setup_bags_clean", label: "Bags and boxes clean", icon: "bag" },
-  { id: "setup_hot_cold", label: "Hot and cold bags apart", icon: "thermo" },
-];
-const SHIFTS = ["11:30 AM", "6:30 PM"];
-const PACK_SECONDS = 10 * 60;
-
-type Slot = "passed" | "missed" | "pending";
-
-const emptyTiles = () => Object.fromEntries(SETUP_CHECKS.map((c) => [c.id, TODO])) as Record<string, TileState>;
+type Slot = "passed" | "missed" | "due" | "waiting";
 
 function mmss(total: number): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-// Step 3: all state here is local and resets when you leave. Step 4 saves it.
 export default function DeliveryCheck({
   restaurant,
   showExpected,
@@ -32,37 +25,23 @@ export default function DeliveryCheck({
   restaurant: Restaurant;
   showExpected: boolean;
 }) {
-  // Layer 1: shift setup
-  const [shift, setShift] = useState(SHIFTS[0]);
-  const [setup, setSetup] = useState<Record<string, Record<string, TileState>>>({
-    [SHIFTS[0]]: emptyTiles(),
-    [SHIFTS[1]]: emptyTiles(),
-  });
-  const [confirmed, setConfirmed] = useState<Record<string, boolean>>({});
+  const { data, now, act } = useApp();
+  const rd = data.restaurants[restaurant.id];
+  const [shift, setShift] = useState<Shift>(SHIFTS[0]);
   const [photoFor, setPhotoFor] = useState<string | null>(null); // a setup check id, or "random_pack"
+  const [justConfirmed, setJustConfirmed] = useState(false);
 
-  // Layer 2: random pack checks (3 a day), the third is due now with a 10 minute countdown
-  const [slots, setSlots] = useState<Slot[]>(["passed", "missed", "pending"]);
-  const [left, setLeft] = useState(PACK_SECONDS);
-  const [packNote, setPackNote] = useState<string | null>(null);
-  const pending = slots.indexOf("pending");
-
-  useEffect(() => {
-    if (pending === -1) return;
-    const id = setInterval(() => {
-      setLeft((s) => {
-        if (s <= 1) {
-          setSlots((cur) => cur.map((x, i) => (i === cur.indexOf("pending") ? "missed" : x)));
-          return PACK_SECONDS;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [pending]);
-
-  const tiles = setup[shift];
+  const tiles = rd.setupDraft[shift];
   const ready = allChecked(Object.values(tiles));
+  const flags = rd.flags.filter((f) => f.key.startsWith("setup:"));
+
+  const today = packToday(rd, now);
+  const left = packSecondsLeft(rd, now);
+  const slots: Slot[] = Array.from({ length: PACK_PER_DAY }, (_, i) => {
+    if (i < today.results.length) return today.results[i].result;
+    if (i === today.results.length && left !== null) return "due";
+    return "waiting";
+  });
 
   return (
     <>
@@ -73,7 +52,16 @@ export default function DeliveryCheck({
           <h2 id="setup-title">1. Shift setup</h2>
           <div className="chip-row" role="group" aria-label="Shift">
             {SHIFTS.map((s) => (
-              <button key={s} type="button" className="pill" aria-pressed={shift === s} onClick={() => setShift(s)}>
+              <button
+                key={s}
+                type="button"
+                className="pill"
+                aria-pressed={shift === s}
+                onClick={() => {
+                  setShift(s);
+                  setJustConfirmed(false);
+                }}
+              >
                 {shift === s && <Icon name="check" size={16} />}
                 {s}
               </button>
@@ -81,27 +69,47 @@ export default function DeliveryCheck({
           </div>
           <div className="tile-grid" style={{ marginTop: 10 }}>
             {SETUP_CHECKS.map((c) => (
-              <CheckTile key={c.id} label={c.label} icon={c.icon} tile={tiles[c.id]} onOpen={() => setPhotoFor(c.id)} />
+              <CheckTile
+                key={c.id}
+                label={c.label}
+                icon={c.icon}
+                tile={tiles[c.id]}
+                onOpen={() => {
+                  setJustConfirmed(false);
+                  setPhotoFor(c.id);
+                }}
+              />
             ))}
           </div>
-          {confirmed[shift] ? (
-            <p className="state-line state-green">
-              <Icon name="check" size={18} /> Setup confirmed (demo)
+
+          {flags.length > 0 && (
+            <p className="state-line" style={{ background: "var(--amber-bg)", color: "var(--amber-text)" }}>
+              <Icon name="alert" size={18} /> Flagged for review: {flags.map((f) => f.label).join(", ")}
             </p>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="btn btn-primary full"
-                style={{ marginTop: 14 }}
-                disabled={!ready}
-                onClick={() => setConfirmed((c) => ({ ...c, [shift]: true }))}
-              >
-                Confirm setup
-              </button>
-              {!ready && <p className="muted center">All three checks must be green.</p>}
-            </>
           )}
+
+          {rd.deliverySnapshot && (
+            <p className={`state-line ${justConfirmed ? "state-green" : "state-grey"}`} role="status">
+              <Icon name={justConfirmed ? "check" : "clock"} size={18} />
+              {justConfirmed
+                ? "Setup confirmed. Diners now see this check."
+                : `Last setup confirmed ${timeAgo(rd.deliverySnapshot.verifiedAt, now)}`}
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="btn btn-primary full"
+            style={{ marginTop: 10 }}
+            disabled={!ready}
+            onClick={() => {
+              act({ type: "confirmSetup", rid: restaurant.id, shift });
+              setJustConfirmed(true);
+            }}
+          >
+            Confirm setup
+          </button>
+          {!ready && <p className="muted center">All three checks must be green. Diners see nothing until then.</p>}
         </section>
 
         {/* Layer 2 */}
@@ -113,14 +121,15 @@ export default function DeliveryCheck({
                 <span className="tick" aria-hidden="true">
                   <Icon name={s === "passed" ? "check" : s === "missed" ? "close" : "clock"} size={16} />
                 </span>
-                <span className="grow">Check {i + 1} of 3</span>
+                <span className="grow">Check {i + 1} of {PACK_PER_DAY}</span>
                 <span className={`chip ${s === "passed" ? "chip-green" : s === "missed" ? "chip-amber" : "chip-grey"}`}>
-                  {s === "passed" ? "Passed" : s === "missed" ? "Missed" : "Due now"}
+                  {s === "passed" ? "Passed" : s === "missed" ? "Missed" : s === "due" ? "Due now" : "Waiting"}
                 </span>
               </li>
             ))}
           </ul>
-          {pending !== -1 && (
+
+          {left !== null ? (
             <div className="pack-due">
               <p style={{ margin: 0 }}>
                 <strong>Photograph the next packed order.</strong>
@@ -128,16 +137,22 @@ export default function DeliveryCheck({
               <p className="countdown" role="timer" aria-live="off">
                 <Icon name="clock" size={18} /> {mmss(left)} left
               </p>
-              {packNote && (
+              {rd.packNote && (
                 <p className="form-error">
-                  <Icon name="alert" size={16} /> {packNote}
+                  <Icon name="alert" size={16} /> {rd.packNote}
                 </p>
               )}
               <button type="button" className="btn btn-primary full" onClick={() => setPhotoFor("random_pack")}>
                 <Icon name="camera" size={20} />
-                {packNote ? "Retake pack photo" : "Take pack photo"}
+                {rd.packNote ? "Retake pack photo" : "Take pack photo"}
               </button>
             </div>
+          ) : (
+            <p className="muted" style={{ marginTop: 10 }}>
+              {today.results.length >= PACK_PER_DAY
+                ? "All three checks for today are finished."
+                : "The next check arrives at a random time. Use the demo controls to trigger one."}
+            </p>
           )}
         </section>
 
@@ -165,18 +180,9 @@ export default function DeliveryCheck({
           title={photoFor === "random_pack" ? "Pack check photo" : (SETUP_CHECKS.find((c) => c.id === photoFor)?.label ?? "Photo check")}
           showExpected={showExpected}
           onResult={(r) => {
-            const t = tileFromAi(r);
-            if (photoFor === "random_pack") {
-              if (t.state === "checked") {
-                setSlots((cur) => cur.map((x, i) => (i === cur.indexOf("pending") ? "passed" : x)));
-                setPackNote(null);
-                setLeft(PACK_SECONDS);
-              } else {
-                setPackNote(t.note ?? "Retake needed");
-              }
-            } else {
-              setSetup((s) => ({ ...s, [shift]: { ...s[shift], [photoFor]: t } }));
-            }
+            const tile = tileFromAi(r);
+            if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
+            else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}
           onClose={() => setPhotoFor(null)}
         />

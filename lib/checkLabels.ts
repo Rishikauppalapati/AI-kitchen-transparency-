@@ -9,6 +9,12 @@ export const DINING_CHECKS = [
   { id: "fridge", label: "Fridge temperature" },
 ] as const;
 
+export const SETUP_CHECKS = [
+  { id: "setup_seals", label: "Seals stocked", icon: "shield" },
+  { id: "setup_bags_clean", label: "Bags and boxes clean", icon: "bag" },
+  { id: "setup_hot_cold", label: "Hot and cold bags apart", icon: "thermo" },
+] as const;
+
 export const EVIDENCE_LABEL: Record<1 | 2 | 3, string> = {
   1: "photo",
   2: "sensor or document",

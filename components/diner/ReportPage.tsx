@@ -4,14 +4,17 @@ import { useState } from "react";
 import AppBar from "../AppBar";
 import { Icon } from "../Icons";
 import RestaurantChips from "../RestaurantChips";
+import { ComplaintTimeline } from "./DeliveryPage";
+import { useApp } from "@/lib/AppState";
 import { COMPLAINT_CATEGORIES } from "@/lib/checkLabels";
 import type { Restaurant } from "@/lib/types";
 
 type Seal = "yes" | "no" | "unsure";
 const SEAL_LABEL: Record<Seal, string> = { yes: "Yes", no: "No", unsure: "Not sure" };
+const SEAL_VALUE = { yes: "intact", no: "broken", unsure: "unsure" } as const;
 
-// Step 2: the form and the status timeline, with fake data.
-// Step 4 connects it to the manager's Complaints inbox.
+// A report becomes a real complaint: it shows up in the manager's Complaints inbox,
+// and this status timeline updates when the manager records the fix.
 export default function ReportPage({
   restaurants,
   restaurant,
@@ -21,18 +24,36 @@ export default function ReportPage({
   restaurant: Restaurant;
   onSelect: (id: string) => void;
 }) {
+  const { data, now, act } = useApp();
   const [category, setCategory] = useState<string | null>(null);
   const [seal, setSeal] = useState<Seal | null>(null);
   const [note, setNote] = useState("");
   const [photoName, setPhotoName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState<string | null>(null);
+  const [sentId, setSentId] = useState<string | null>(null);
+
+  const sent = sentId ? data.restaurants[restaurant.id].complaints.find((c) => c.id === sentId) : undefined;
 
   function submit() {
     if (!category) return setError("Pick what went wrong first.");
     if (!seal) return setError("Tell us if the seal was intact.");
     setError(null);
-    setSent(category);
+    const id = `c-${now}`;
+    act({
+      type: "addComplaint",
+      rid: restaurant.id,
+      complaint: {
+        id,
+        category,
+        seal: SEAL_VALUE[seal],
+        resolved: false,
+        steps: [
+          { label: "Reported by a diner", at: now },
+          { label: "Sent to the kitchen", at: now },
+        ],
+      },
+    });
+    setSentId(id);
   }
 
   if (sent) {
@@ -45,30 +66,16 @@ export default function ReportPage({
               <Icon name="check" size={32} />
             </span>
             <h3>Thanks, we have your report</h3>
-            <p className="muted">{sent}</p>
+            <p className="muted">{sent.category}</p>
           </div>
           <h3>Status</h3>
-          <ol className="timeline">
-            <li className="done">
-              <span className="dot" aria-hidden="true"><Icon name="check" size={14} /></span>
-              <div>Report received</div>
-            </li>
-            <li>
-              <span className="dot pending" aria-hidden="true" />
-              <div>Sent to the kitchen</div>
-            </li>
-            <li>
-              <span className="dot pending" aria-hidden="true" />
-              <div>Fix recorded</div>
-            </li>
-          </ol>
-          <p className="chip chip-grey">Demo: not yet connected to the manager inbox (step 4)</p>
+          <ComplaintTimeline c={sent} now={now} />
           <button
             type="button"
             className="btn btn-primary full"
             style={{ marginTop: 14 }}
             onClick={() => {
-              setSent(null);
+              setSentId(null);
               setCategory(null);
               setSeal(null);
               setNote("");

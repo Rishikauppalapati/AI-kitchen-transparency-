@@ -14,8 +14,8 @@ import DiningCheck from "@/components/manager/DiningCheck";
 import ManagerHome from "@/components/manager/ManagerHome";
 import PhoneFrame from "@/components/PhoneFrame";
 import { restaurants } from "@/data/restaurants";
+import { AppProvider, useApp } from "@/lib/AppState";
 import type { DinerTab, ManagerTab, Role } from "@/lib/types";
-import { useNow } from "@/lib/useNow";
 
 const DINER_NAV: NavItem<DinerTab>[] = [
   { id: "dining", label: "Dining", icon: "dining" },
@@ -52,9 +52,17 @@ const DEFAULTS: UiState = {
 };
 
 export default function Home() {
+  return (
+    <AppProvider>
+      <Shell />
+    </AppProvider>
+  );
+}
+
+function Shell() {
+  const { reset } = useApp();
   const [ui, setUi] = useState<UiState>(DEFAULTS);
   const [ready, setReady] = useState(false);
-  const clock = useNow();
 
   // Read saved state after the first render (localStorage only exists in the browser).
   useEffect(() => {
@@ -88,7 +96,7 @@ export default function Home() {
     switch (ui.dinerTab) {
       case "dining":
         return ui.openRestaurant ? (
-          <RestaurantDetail key={restaurant.id} restaurant={restaurant} clock={clock} onBack={() => patch({ openRestaurant: false })} />
+          <RestaurantDetail key={restaurant.id} restaurant={restaurant} onBack={() => patch({ openRestaurant: false })} />
         ) : (
           <DiningList restaurants={restaurants} onOpen={(id) => patch({ restaurantId: id, openRestaurant: true })} />
         );
@@ -99,7 +107,6 @@ export default function Home() {
             restaurants={restaurants}
             restaurant={restaurant}
             onSelect={(id) => patch({ restaurantId: id })}
-            clock={clock}
           />
         );
       case "news":
@@ -150,6 +157,10 @@ export default function Home() {
         onRestaurant={(id) => patch({ restaurantId: id, openRestaurant: false })}
         showExpected={ui.showExpected}
         onShowExpected={(showExpected) => patch({ showExpected })}
+        onReset={() => {
+          reset();
+          setUi(DEFAULTS);
+        }}
       />
 
       {ui.role === "diner" ? (

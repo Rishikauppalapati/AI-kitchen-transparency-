@@ -8,7 +8,9 @@ import CheckTile from "./CheckTile";
 import PhotoSheet from "./PhotoSheet";
 import { DOCUMENTS_DUE } from "@/data/managerFake";
 import { DINING_CHECKS } from "@/lib/checkLabels";
-import { allChecked, DEMO_OTP, fridgeTile, parseTemperature, tileFromAi, TODO } from "@/lib/rules";
+import { useApp } from "@/lib/AppState";
+import { allChecked, DEMO_OTP, fridgeTile, parseTemperature, tileFromAi } from "@/lib/rules";
+import { timeAgo } from "@/lib/time";
 import type { Restaurant, TileState } from "@/lib/types";
 
 const ICONS: Record<string, string> = {
@@ -22,7 +24,6 @@ const ICONS: Record<string, string> = {
 
 type Open = null | { kind: "photo"; id: string } | { kind: "fridge" } | { kind: "otp" };
 
-// Step 3: tile state lives here and resets when you leave. Step 4 moves it into saved app state.
 export default function DiningCheck({
   restaurant,
   showExpected,
@@ -30,47 +31,56 @@ export default function DiningCheck({
   restaurant: Restaurant;
   showExpected: boolean;
 }) {
-  const [tiles, setTiles] = useState<Record<string, TileState>>(
-    Object.fromEntries(DINING_CHECKS.map((c) => [c.id, TODO])),
-  );
+  const { data, now, act } = useApp();
+  const rd = data.restaurants[restaurant.id];
   const [open, setOpen] = useState<Open>(null);
-  const [signedOff, setSignedOff] = useState(false);
+  const [justSigned, setJustSigned] = useState(false);
 
-  const ready = allChecked(Object.values(tiles));
-  const set = (id: string, t: TileState) => setTiles((s) => ({ ...s, [id]: t }));
+  const ready = allChecked(Object.values(rd.diningDraft)) && rd.diningFridgeC !== null;
+  const setTile = (id: string, tile: TileState, fridgeC?: number) =>
+    act({ type: "tile", rid: restaurant.id, id, tile, fridgeC });
+  const flags = rd.flags.filter((f) => f.key.startsWith("dining:"));
 
   return (
     <>
       <AppBar title="Dining check" subtitle={restaurant.name} />
       <div className="stack">
+        {rd.diningSnapshot && (
+          <p className={`state-line ${justSigned ? "state-green" : "state-grey"}`} role="status">
+            <Icon name={justSigned ? "check" : "clock"} size={18} />
+            {justSigned ? "Signed off. Diners now see this check." : `Last signed off ${timeAgo(rd.diningSnapshot.verifiedAt, now)}`}
+          </p>
+        )}
+
         <div className="tile-grid">
           {DINING_CHECKS.map((c) => (
             <CheckTile
               key={c.id}
               label={c.label}
               icon={ICONS[c.id]}
-              tile={tiles[c.id]}
-              onOpen={() => setOpen(c.id === "fridge" ? { kind: "fridge" } : { kind: "photo", id: c.id })}
+              tile={rd.diningDraft[c.id]}
+              onOpen={() => {
+                setJustSigned(false);
+                setOpen(c.id === "fridge" ? { kind: "fridge" } : { kind: "photo", id: c.id });
+              }}
             />
           ))}
         </div>
+
+        {flags.length > 0 && (
+          <p className="state-line" style={{ background: "var(--amber-bg)", color: "var(--amber-text)" }}>
+            <Icon name="alert" size={18} /> Flagged for review: {flags.map((f) => f.label).join(", ")}
+          </p>
+        )}
 
         <p className="chip chip-grey" style={{ alignSelf: "flex-start" }}>
           <Icon name="doc" size={14} /> Documents due: {DOCUMENTS_DUE}
         </p>
 
-        {signedOff ? (
-          <p className="state-line state-green">
-            <Icon name="check" size={18} /> Signed off (demo). Diners see this once step 4 is built.
-          </p>
-        ) : (
-          <>
-            <button type="button" className="btn btn-primary full" disabled={!ready} onClick={() => setOpen({ kind: "otp" })}>
-              Sign off with OTP
-            </button>
-            {!ready && <p className="muted center">All six checks must be green to sign off.</p>}
-          </>
-        )}
+        <button type="button" className="btn btn-primary full" disabled={!ready} onClick={() => setOpen({ kind: "otp" })}>
+          Sign off with OTP
+        </button>
+        {!ready && <p className="muted center">All six checks must be green to sign off. Diners see nothing until then.</p>}
       </div>
 
       {open?.kind === "photo" && (
@@ -78,14 +88,14 @@ export default function DiningCheck({
           checkId={open.id}
           title={DINING_CHECKS.find((c) => c.id === open.id)?.label ?? "Photo check"}
           showExpected={showExpected}
-          onResult={(r) => set(open.id, tileFromAi(r))}
+          onResult={(r) => setTile(open.id, tileFromAi(r))}
           onClose={() => setOpen(null)}
         />
       )}
       {open?.kind === "fridge" && (
         <FridgeSheet
-          onSave={(t) => {
-            set("fridge", t);
+          onSave={(c) => {
+            setTile("fridge", fridgeTile(c), c);
             setOpen(null);
           }}
           onClose={() => setOpen(null)}
@@ -94,7 +104,8 @@ export default function DiningCheck({
       {open?.kind === "otp" && (
         <OtpSheet
           onDone={() => {
-            setSignedOff(true);
+            act({ type: "signOff", rid: restaurant.id, signedBy: "Sample manager" });
+            setJustSigned(true);
             setOpen(null);
           }}
           onClose={() => setOpen(null)}
@@ -104,14 +115,14 @@ export default function DiningCheck({
   );
 }
 
-function FridgeSheet({ onSave, onClose }: { onSave: (t: TileState) => void; onClose: () => void }) {
+function FridgeSheet({ onSave, onClose }: { onSave: (celsius: number) => void; onClose: () => void }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   function save() {
     const c = parseTemperature(value);
     if (c === null) return setError("Enter a number between -30 and 30.");
-    onSave(fridgeTile(c));
+    onSave(c);
   }
 
   return (

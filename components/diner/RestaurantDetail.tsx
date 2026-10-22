@@ -6,20 +6,19 @@ import { Icon } from "../Icons";
 import RaidChip from "../RaidChip";
 import BookingSheet from "./BookingSheet";
 import KitchenTab from "./KitchenTab";
+import { useApp } from "@/lib/AppState";
 import type { Restaurant } from "@/lib/types";
-import type { Clock } from "@/lib/useNow";
 
 type Tab = "kitchen" | "about";
 
 export default function RestaurantDetail({
   restaurant,
-  clock,
   onBack,
 }: {
   restaurant: Restaurant;
-  clock: Clock | null;
   onBack: () => void;
 }) {
+  const { now } = useApp();
   const [tab, setTab] = useState<Tab>("kitchen");
   const [booking, setBooking] = useState(false);
 
@@ -44,7 +43,7 @@ export default function RestaurantDetail({
           <RaidChip state={restaurant.raidState} />
         </div>
 
-        <button type="button" className="btn btn-primary full" onClick={() => setBooking(true)} disabled={!clock}>
+        <button type="button" className="btn btn-primary full" onClick={() => setBooking(true)}>
           <Icon name="dining" size={20} />
           Book a table
         </button>
@@ -59,7 +58,7 @@ export default function RestaurantDetail({
         </div>
 
         {tab === "kitchen" ? (
-          clock ? <KitchenTab restaurant={restaurant} clock={clock} /> : <p className="muted">Loading…</p>
+          <KitchenTab restaurant={restaurant} />
         ) : (
           <section className="card block">
             <h2>About</h2>
@@ -71,9 +70,7 @@ export default function RestaurantDetail({
         )}
       </div>
 
-      {booking && clock && (
-        <BookingSheet restaurantName={restaurant.name} startMs={clock.now} onClose={() => setBooking(false)} />
-      )}
+      {booking && <BookingSheet restaurantName={restaurant.name} startMs={now} onClose={() => setBooking(false)} />}
     </>
   );
 }

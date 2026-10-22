@@ -1,7 +1,8 @@
 import AppBar from "../AppBar";
 import { Icon } from "../Icons";
 import ProgressRing from "./ProgressRing";
-import { FLAGGED, SCHEDULE } from "@/data/managerFake";
+import { useApp } from "@/lib/AppState";
+import { schedule } from "@/lib/state";
 import type { ManagerTab, Restaurant } from "@/lib/types";
 
 export default function ManagerHome({
@@ -13,20 +14,22 @@ export default function ManagerHome({
   onGo: (tab: ManagerTab) => void;
   onPreview: () => void;
 }) {
-  const done = SCHEDULE.filter((s) => s.done).length;
-  const flagged = FLAGGED[restaurant.id] ?? [];
-  const next = SCHEDULE.find((s) => !s.done);
+  const { data, now } = useApp();
+  const rd = data.restaurants[restaurant.id];
+  const rows = schedule(rd, now);
+  const done = rows.filter((s) => s.status === "done").length;
+  const next = rows.find((s) => s.status !== "done");
 
   return (
     <>
       <AppBar title="Good morning" subtitle={`${restaurant.name} · manager view`} />
       <div className="stack">
         <section className="hero ring-hero" aria-label="Today's progress">
-          <ProgressRing done={done} total={SCHEDULE.length} />
+          <ProgressRing done={done} total={rows.length} />
           <div>
             <p className="ring-title">Check-ins today</p>
             <p className="ring-sub">
-              {done} of {SCHEDULE.length} done
+              {done} of {rows.length} done
             </p>
             <p className="ring-sub">
               <Icon name={restaurant.streakDays > 0 ? "check" : "dash"} size={14} />{" "}
@@ -70,16 +73,18 @@ export default function ManagerHome({
         <section className="card block" aria-labelledby="schedule-title">
           <h2 id="schedule-title">Today&apos;s schedule</h2>
           <ul className="schedule">
-            {SCHEDULE.map((s) => (
-              <li key={s.id} className={s.done ? "is-done" : ""}>
+            {rows.map((s) => (
+              <li key={s.id} className={s.status === "done" ? "is-done" : ""}>
                 <span className="tick" aria-hidden="true">
-                  <Icon name={s.done ? "check" : "clock"} size={16} />
+                  <Icon name={s.status === "done" ? "check" : s.status === "missed" ? "close" : "clock"} size={16} />
                 </span>
                 <span className="grow">
                   {s.label}
                   <span className="muted" style={{ display: "block" }}>{s.when}</span>
                 </span>
-                <span className={`chip ${s.done ? "chip-green" : "chip-grey"}`}>{s.done ? "Done" : "To do"}</span>
+                <span className={`chip ${s.status === "done" ? "chip-green" : s.status === "missed" ? "chip-amber" : "chip-grey"}`}>
+                  {s.status === "done" ? "Done" : s.status === "missed" ? "Missed" : "To do"}
+                </span>
               </li>
             ))}
           </ul>
@@ -87,14 +92,14 @@ export default function ManagerHome({
 
         <section className="card block" aria-labelledby="flag-title">
           <h2 id="flag-title">Flagged for review</h2>
-          {flagged.length === 0 ? (
+          {rd.flags.length === 0 ? (
             <p className="state-line state-green">
               <Icon name="check" size={18} /> Nothing flagged
             </p>
           ) : (
             <>
               <p className="state-line" style={{ background: "var(--amber-bg)", color: "var(--amber-text)" }}>
-                <Icon name="alert" size={18} /> {flagged.join(", ")}: retaken 3 or more times
+                <Icon name="alert" size={18} /> {rd.flags.map((f) => f.label).join(", ")}: retaken 3 or more times
               </p>
               <p className="muted">Only you see this. Diners never see flags.</p>
             </>

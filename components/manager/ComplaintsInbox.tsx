@@ -4,21 +4,18 @@ import { useState } from "react";
 import AppBar from "../AppBar";
 import { Icon } from "../Icons";
 import Sheet from "../Sheet";
-import { INBOX, type InboxComplaint } from "@/data/managerFake";
+import { useApp } from "@/lib/AppState";
+import type { Complaint } from "@/lib/state";
+import { timeAgo } from "@/lib/time";
 import type { Restaurant } from "@/lib/types";
 
 const SEAL_TEXT = { intact: "Seal intact", broken: "Seal broken", unsure: "Seal: not sure" } as const;
 
-function age(hours: number): string {
-  if (hours < 24) return `${hours} hours ago`;
-  const d = Math.floor(hours / 24);
-  return `${d} day${d === 1 ? "" : "s"} ago`;
-}
-
-// Step 3: resolving a complaint only changes this screen. Step 4 updates the diner's history too.
+// Complaints are shared with the diner's Report screen and delivery history.
 export default function ComplaintsInbox({ restaurant }: { restaurant: Restaurant }) {
-  const [items, setItems] = useState<InboxComplaint[]>(INBOX[restaurant.id] ?? []);
-  const [fixing, setFixing] = useState<InboxComplaint | null>(null);
+  const { data, now, act } = useApp();
+  const items = data.restaurants[restaurant.id].complaints;
+  const [fixing, setFixing] = useState<Complaint | null>(null);
 
   const open = items.filter((i) => !i.resolved);
   const closed = items.filter((i) => i.resolved);
@@ -43,12 +40,10 @@ export default function ComplaintsInbox({ restaurant }: { restaurant: Restaurant
               </span>
             </div>
             <p className="muted">
-              {SEAL_TEXT[c.seal]} · {age(c.hoursAgo)}
+              {SEAL_TEXT[c.seal]} · {timeAgo(c.steps[0].at, now)}
             </p>
             {c.resolved ? (
-              <p>
-                <strong>Fix:</strong> {c.fix}
-              </p>
+              <p>{c.steps[c.steps.length - 1].label}</p>
             ) : (
               <button type="button" className="btn btn-outline full" style={{ marginTop: 8 }} onClick={() => setFixing(c)}>
                 Record the fix
@@ -62,7 +57,7 @@ export default function ComplaintsInbox({ restaurant }: { restaurant: Restaurant
         <FixSheet
           complaint={fixing}
           onSave={(text) => {
-            setItems((list) => list.map((i) => (i.id === fixing.id ? { ...i, resolved: true, fix: text } : i)));
+            act({ type: "resolveComplaint", rid: restaurant.id, id: fixing.id, text });
             setFixing(null);
           }}
           onClose={() => setFixing(null)}
@@ -77,7 +72,7 @@ function FixSheet({
   onSave,
   onClose,
 }: {
-  complaint: InboxComplaint;
+  complaint: Complaint;
   onSave: (text: string) => void;
   onClose: () => void;
 }) {
@@ -115,7 +110,7 @@ function FixSheet({
           <Icon name="alert" size={16} /> {error}
         </p>
       )}
-      <p className="muted">Demo: the diner&apos;s history updates in step 4.</p>
+      <p className="muted">Saving this updates the diner&apos;s delivery history.</p>
       <button type="button" className="btn btn-primary full" onClick={save}>
         Mark as resolved
       </button>
