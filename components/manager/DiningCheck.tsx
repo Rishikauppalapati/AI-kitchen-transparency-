@@ -27,9 +27,11 @@ type Open = null | { kind: "photo"; id: string } | { kind: "fridge" } | { kind: 
 export default function DiningCheck({
   restaurant,
   showExpected,
+  liveDemo,
 }: {
   restaurant: Restaurant;
   showExpected: boolean;
+  liveDemo: boolean;
 }) {
   const { data, now, act } = useApp();
   const rd = data.restaurants[restaurant.id];
@@ -88,7 +90,8 @@ export default function DiningCheck({
           checkId={open.id}
           title={DINING_CHECKS.find((c) => c.id === open.id)?.label ?? "Photo check"}
           showExpected={showExpected}
-          onResult={(r) => setTile(open.id, tileFromAi(r))}
+          liveDemo={liveDemo}
+          onResult={(r, via) => setTile(open.id, tileFromAi(r, via))}
           onError={(wait) => setTile(open.id, errorTile(wait))}
           onClose={() => setOpen(null)}
         />

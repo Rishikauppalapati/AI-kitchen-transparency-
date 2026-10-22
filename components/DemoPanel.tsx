@@ -27,6 +27,8 @@ export default function DemoPanel({
   onShowExpected,
   autoNotify,
   onAutoNotify,
+  liveDemo,
+  onLiveDemo,
   onReset,
 }: {
   role: Role;
@@ -38,6 +40,8 @@ export default function DemoPanel({
   onShowExpected: (on: boolean) => void;
   autoNotify: boolean;
   onAutoNotify: (on: boolean) => void;
+  liveDemo: boolean;
+  onLiveDemo: (on: boolean) => void;
   onReset: () => void;
 }) {
   const { data, now, act } = useApp();
@@ -114,6 +118,21 @@ export default function DemoPanel({
             {showExpected && <Icon name="check" size={16} />}
             {showExpected ? "On" : "Off"}
           </button>
+
+          <span className="field-label" id="live-label">Live AI for demo photos</span>
+          <button
+            type="button"
+            className="seg-btn full-seg"
+            aria-pressed={liveDemo}
+            aria-labelledby="live-label"
+            onClick={() => onLiveDemo(!liveDemo)}
+          >
+            {liveDemo && <Icon name="check" size={16} />}
+            {liveDemo ? "On: demo photos run the real AI" : "Off: demo photos use their saved result"}
+          </button>
+          <p className="muted" style={{ margin: "6px 0 0" }}>
+            Off is best for showing someone: tidy photos are always green and untidy ones always amber, instantly. Turn it on to show the real AI judging them (if the AI is busy, the saved result is used). Take photo and Upload always use the live AI.
+          </p>
 
           <span className="field-label" id="auto-label">Auto notifications</span>
           <button

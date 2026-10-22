@@ -45,6 +45,7 @@ interface UiState {
   openRestaurant: boolean; // diner is viewing one restaurant's page
   showExpected: boolean; // demo photos show their expected AI result
   autoNotify: boolean; // a reminder pops up by itself on a timer while in the Manager view
+  liveDemo: boolean; // demo photos run the live AI (off: they use their saved result, instantly)
 }
 
 const DEFAULTS: UiState = {
@@ -55,6 +56,7 @@ const DEFAULTS: UiState = {
   openRestaurant: false,
   showExpected: false,
   autoNotify: true,
+  liveDemo: false,
 };
 
 export default function Home() {
@@ -167,9 +169,9 @@ function Shell() {
           />
         );
       case "dining":
-        return <DiningCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} />;
+        return <DiningCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} liveDemo={ui.liveDemo} />;
       case "delivery":
-        return <DeliveryCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} />;
+        return <DeliveryCheck key={restaurant.id} restaurant={restaurant} showExpected={ui.showExpected} liveDemo={ui.liveDemo} />;
       case "complaints":
         return <ComplaintsInbox key={restaurant.id} restaurant={restaurant} />;
     }
@@ -199,6 +201,8 @@ function Shell() {
         onShowExpected={(showExpected) => patch({ showExpected })}
         autoNotify={ui.autoNotify}
         onAutoNotify={(autoNotify) => patch({ autoNotify })}
+        liveDemo={ui.liveDemo}
+        onLiveDemo={(liveDemo) => patch({ liveDemo })}
         onReset={() => {
           reset();
           setUi(DEFAULTS);

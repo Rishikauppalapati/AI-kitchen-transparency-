@@ -24,11 +24,11 @@ export function fridgeTile(celsius: number): TileState {
 
 // Rule 1: only a clear pass turns a tile green. Fail, "cannot tell", "photo doesn't
 // show this" (and, later, an AI error) all turn it amber with a short note.
-export function tileFromAi(result: AiResult): TileState {
-  if (result.relevant && result.status === "pass") return { state: "checked", note: result.note };
-  if (!result.relevant) return { state: "retake", note: "Photo doesn't show this" };
-  if (result.status === "cannot_tell") return { state: "retake", note: result.note || "Can't tell from this photo" };
-  return { state: "retake", note: result.note };
+export function tileFromAi(result: AiResult, via: "ai" | "demo" = "ai"): TileState {
+  if (result.relevant && result.status === "pass") return { state: "checked", note: result.note, via };
+  if (!result.relevant) return { state: "retake", note: "Photo doesn't show this", via };
+  if (result.status === "cannot_tell") return { state: "retake", note: result.note || "Can't tell from this photo", via };
+  return { state: "retake", note: result.note, via };
 }
 
 // An AI or network failure also turns the tile amber with a Retake button (rule 1).

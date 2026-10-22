@@ -1044,6 +1044,13 @@ button {
   font-weight: 500;
 }
 
+.ctile-via {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
 .ctile-pill {
   margin-top: 4px;
   align-self: flex-start;

@@ -8,13 +8,15 @@ import { checkPhoto } from "@/lib/checkPhoto";
 import { demoPath, demoPhotoExists, demoPhotosFor, demoUrl, expectedText, loadDemoPhoto, type DemoPhoto } from "@/lib/demoPhotos";
 import type { AiResult } from "@/lib/types";
 
-// Take photo, Upload and a demo photo all go through the same real AI check (POST /api/check).
-// If a demo photo's file isn't in public/demo/ yet, the sheet says which file to add,
-// and offers its expected result as a clearly labelled simulation instead.
+// Take photo and Upload always run the live AI (POST /api/check).
+// A demo photo applies the result the real AI gave that exact image when it was tested, instantly, so a demo is
+// always the same (tidy goes green, untidy goes amber). With "Live AI for demo photos" on, it runs the live AI
+// instead, and falls back to the saved result if the AI service is busy or unavailable.
 export default function PhotoSheet({
   checkId,
   title,
   showExpected,
+  liveDemo,
   onResult,
   onError,
   onClose,
@@ -22,7 +24,8 @@ export default function PhotoSheet({
   checkId: string;
   title: string;
   showExpected: boolean;
-  onResult: (r: AiResult) => void;
+  liveDemo: boolean;
+  onResult: (r: AiResult, via: "ai" | "demo") => void;
   onError: (retryAfterSeconds?: number) => void; // the AI or network failed: the tile turns amber
   onClose: () => void;
 }) {
@@ -45,7 +48,7 @@ export default function PhotoSheet({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkId]);
 
-  async function run(file: File) {
+  async function run(file: File, demo?: DemoPhoto) {
     setProblem(null);
     setMissing(null);
     setBusy(true);
@@ -53,10 +56,14 @@ export default function PhotoSheet({
     setBusy(false);
 
     if (outcome.kind === "result") {
-      onResult(outcome.result);
+      onResult(outcome.result, "ai");
       onClose();
     } else if (outcome.kind === "error") {
-      onError(outcome.retryAfterSeconds);
+      if (demo) {
+        onResult(demo.expected, "demo"); // the live AI is unavailable: use this demo photo's saved result
+      } else {
+        onError(outcome.retryAfterSeconds);
+      }
       onClose();
     } else {
       setProblem(outcome.message); // a bad file: say so, change nothing, keep the sheet open
@@ -74,16 +81,21 @@ export default function PhotoSheet({
     if (!photo) return;
     setProblem(null);
     setMissing(null);
+    if (!liveDemo) {
+      onResult(photo.expected, "demo"); // the saved result: instant and always the same
+      onClose();
+      return;
+    }
     setBusy(true);
     const file = await loadDemoPhoto(photo.name);
     setBusy(false);
     if (!file) return setMissing(photo); // not added yet: say so, don't crash
-    await run(file);
+    await run(file, photo);
   }
 
-  function useSimulated() {
+  function useSaved() {
     if (!missing) return;
-    onResult(missing.expected);
+    onResult(missing.expected, "demo");
     onClose();
   }
 
@@ -153,6 +165,11 @@ export default function PhotoSheet({
       <button type="button" className="btn btn-primary full" style={{ marginTop: 14 }} disabled={!choice || busy} onClick={useDemo}>
         Use this demo photo
       </button>
+      <p className="muted" style={{ margin: "8px 0 0" }}>
+        {liveDemo
+          ? "Live AI for demo photos is on: the real AI checks the picture (if it is unavailable, the saved result is used)."
+          : "A demo photo uses the result the real AI gave this exact picture when it was tested, so it is instant and always the same. Take photo and Upload always run the live AI."}
+      </p>
 
       <div role="status" aria-live="polite">
         {busy && <p className="muted">Checking the photo… this takes a few seconds.</p>}
@@ -166,8 +183,8 @@ export default function PhotoSheet({
             <p>
               <Icon name="alert" size={16} /> Add this photo to <code>{demoPath(missing.name)}</code>
             </p>
-            <button type="button" className="btn btn-outline full" onClick={useSimulated}>
-              Use the simulated result instead (no AI)
+            <button type="button" className="btn btn-outline full" onClick={useSaved}>
+              Use the saved result instead (no live AI)
             </button>
           </div>
         )}

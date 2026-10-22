@@ -137,6 +137,21 @@ Final result: every image gives the expected answer on every run, with no wrong 
 | AI-05 | Google reports the free-tier limit (HTTP 429). | The app moves to a backup model; if all are limited, it says how long to wait. | Passed for the message parsing (9 cases built from Google's real error texts); not provoked live | Unit check |
 | AI-06 | The AI service fails completely. | Tile amber "AI was busy. Not a fail: retry" with the Retake pill, not counted as a failed attempt. | Passed | Browser |
 | AI-07 | Check six photos within one minute on the free tier. | May hit the 15-per-minute limit and show the wait message. | Known limit | Google free tier |
+### Demo photos: saved results, and the live switch
+
+By default a demo photo applies the result the real AI gave that exact image (section 8), instantly and without any AI call, so a demo is the same every time. The tile is labelled "Demo photo". The switch "Live AI for demo photos" in the Manager's demo controls runs the real AI on demo photos instead, and the tile is then labelled "Live AI check".
+
+| ID | Test case | Expected | Result | How |
+|---|---|---|---|---|
+| DM-01 | In dining, pick each tidy demo image (caps, floors, labels, bins, handwash). | Every tile turns green, labelled "Demo photo", in under half a second, with no AI call. | Passed (5 of 5) | Browser |
+| DM-02 | In dining, pick each untidy demo image and the two bad inputs. | Every tile turns amber (Retake), labelled "Demo photo". | Passed (7 of 7) | Browser |
+| DM-03 | In delivery, pick each tidy and untidy demo image (seals, bags, hot and cold). | Tidy green, untidy amber, labelled "Demo photo". | Passed (6 of 6) | Browser |
+| DM-04 | Do the whole journey with demo photos: five tidy dining photos, fridge 3.5, OTP 1234. | "Sign off" enables, and the diner page shows "Verified today" and "Last verified: just now". | Passed | Browser |
+| DM-05 | In delivery, pick the three tidy setup photos and confirm, then answer a pack check with the untidy and then the tidy demo photo. | Setup confirmed and diner delivery page updates. Untidy pack photo refused with the reason. Tidy one counts, and the diner's "n of 3" goes up. | Passed | Browser |
+| DM-06 | Turn on "Live AI for demo photos" and use a tidy demo photo. | A real AI call, green, labelled "Live AI check". | Passed | Browser, real AI |
+| DM-07 | With the live switch on, make every AI call fail, then use a tidy and an untidy demo photo. | The saved result is used instead: tidy green, untidy amber, labelled "Demo photo". Never an error. | Passed | Browser (simulated outage) |
+| DM-08 | Use Take photo or Upload with the switch off. | Always the live AI, labelled "Live AI check". | Passed (earlier tests; the code path is unchanged) | Real AI |
+
 ## 9. Security
 
 | ID | Test case | Expected | Result | How |

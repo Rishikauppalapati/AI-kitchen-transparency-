@@ -16,13 +16,15 @@ export default function CheckTile({
 }) {
   const status =
     tile.state === "checked" ? "Checked" : tile.state === "retake" ? "Needs a retake" : "To do";
+  // Where the result came from. Typed readings (the fridge) and the AI-busy message have no source.
+  const via = tile.error ? null : tile.via === "demo" ? "Demo photo" : tile.via === "ai" ? "Live AI check" : null;
 
   return (
     <button
       type="button"
       className={`ctile ctile-${tile.state}`}
       onClick={onOpen}
-      aria-label={`${label}. ${status}.${tile.note ? ` ${tile.note}.` : ""}`}
+      aria-label={`${label}. ${status}.${tile.note ? ` ${tile.note}.` : ""}${via ? ` ${via}.` : ""}`}
     >
       <span className="ctile-icon" aria-hidden="true">
         <Icon name={tile.state === "checked" ? "check" : tile.state === "retake" ? "alert" : icon} />
@@ -31,6 +33,7 @@ export default function CheckTile({
       <span className="ctile-status" aria-hidden="true">
         {status}
         {tile.note && <span className="ctile-note">{tile.note}</span>}
+        {via && <span className="ctile-via">{via}</span>}
         {tile.state === "retake" && <span className="ctile-pill">Retake</span>}
       </span>
     </button>

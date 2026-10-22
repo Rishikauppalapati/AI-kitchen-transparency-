@@ -21,9 +21,11 @@ function mmss(total: number): string {
 export default function DeliveryCheck({
   restaurant,
   showExpected,
+  liveDemo,
 }: {
   restaurant: Restaurant;
   showExpected: boolean;
+  liveDemo: boolean;
 }) {
   const { data, now, act } = useApp();
   const rd = data.restaurants[restaurant.id];
@@ -179,8 +181,9 @@ export default function DeliveryCheck({
           checkId={photoFor}
           title={photoFor === "random_pack" ? "Pack check photo" : (SETUP_CHECKS.find((c) => c.id === photoFor)?.label ?? "Photo check")}
           showExpected={showExpected}
-          onResult={(r) => {
-            const tile = tileFromAi(r);
+          liveDemo={liveDemo}
+          onResult={(r, via) => {
+            const tile = tileFromAi(r, via);
             if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
             else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}
