@@ -9,7 +9,7 @@ import PhotoSheet from "./PhotoSheet";
 import { DOCUMENTS_DUE } from "@/data/managerFake";
 import { DINING_CHECKS } from "@/lib/checkLabels";
 import { useApp } from "@/lib/AppState";
-import { allChecked, DEMO_OTP, fridgeTile, parseTemperature, tileFromAi } from "@/lib/rules";
+import { allChecked, DEMO_OTP, errorTile, fridgeTile, parseTemperature, tileFromAi } from "@/lib/rules";
 import { timeAgo } from "@/lib/time";
 import type { Restaurant, TileState } from "@/lib/types";
 
@@ -89,6 +89,7 @@ export default function DiningCheck({
           title={DINING_CHECKS.find((c) => c.id === open.id)?.label ?? "Photo check"}
           showExpected={showExpected}
           onResult={(r) => setTile(open.id, tileFromAi(r))}
+          onError={() => setTile(open.id, errorTile())}
           onClose={() => setOpen(null)}
         />
       )}

@@ -7,7 +7,7 @@ import CheckTile from "./CheckTile";
 import PhotoSheet from "./PhotoSheet";
 import { SETUP_CHECKS } from "@/lib/checkLabels";
 import { useApp } from "@/lib/AppState";
-import { allChecked, tileFromAi } from "@/lib/rules";
+import { allChecked, errorTile, tileFromAi } from "@/lib/rules";
 import { PACK_PER_DAY, packSecondsLeft, packToday, SHIFTS, type Shift } from "@/lib/state";
 import { timeAgo } from "@/lib/time";
 import type { Restaurant } from "@/lib/types";
@@ -181,6 +181,11 @@ export default function DeliveryCheck({
           showExpected={showExpected}
           onResult={(r) => {
             const tile = tileFromAi(r);
+            if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
+            else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
+          }}
+          onError={() => {
+            const tile = errorTile();
             if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
             else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}

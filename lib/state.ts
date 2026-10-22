@@ -270,7 +270,7 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
           diningFridgeC:
             action.id === "fridge" ? (action.tile.state === "checked" ? (action.fridgeC ?? null) : null) : rd.diningFridgeC,
         };
-        if (action.tile.state === "retake") next = noteFailure(next, `dining:${action.id}`, label, action.now);
+        if (action.tile.state === "retake" && !action.tile.error) next = noteFailure(next, `dining:${action.id}`, label, action.now);
         return next;
       });
 
@@ -281,7 +281,7 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
           ...rd,
           setupDraft: { ...rd.setupDraft, [action.shift]: { ...rd.setupDraft[action.shift], [action.id]: action.tile } },
         };
-        if (action.tile.state === "retake") next = noteFailure(next, `setup:${action.shift}:${action.id}`, label, action.now);
+        if (action.tile.state === "retake" && !action.tile.error) next = noteFailure(next, `setup:${action.shift}:${action.id}`, label, action.now);
         return next;
       });
 

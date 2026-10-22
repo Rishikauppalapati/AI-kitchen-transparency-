@@ -16,6 +16,7 @@ export interface AiResult {
 export interface TileState {
   state: "todo" | "checked" | "retake";
   note?: string;
+  error?: boolean; // the AI or network failed: amber, but not the manager's fault, so it is not counted as a failed attempt
 }
 
 export type RaidState = "resolved" | "unresolved" | "none";
