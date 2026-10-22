@@ -69,8 +69,9 @@ function Shell() {
   const [ui, setUi] = useState<UiState>(DEFAULTS);
   const [ready, setReady] = useState(false);
 
-  // Auto notifications (for showing the app to someone): while in the Manager view, one reminder pops up
-  // on a timer, cycling through the list. It skips a pack check that can't start, and waits while a sheet is open.
+  // Auto notifications (for showing the app to someone): while in the Manager view, a reminder pops up every
+  // couple of minutes, cycling through the list. It waits while a sheet is open or an earlier reminder is
+  // still unread, and skips a pack check that can't start.
   const latest = useRef({ data, now, act });
   useEffect(() => {
     latest.current = { data, now, act };
@@ -82,6 +83,7 @@ function Shell() {
       if (document.querySelector(".sheet")) return; // don't pop over something the presenter is using
       const { data, now, act } = latest.current;
       const rd = data.restaurants[ui.restaurantId];
+      if (rd.notices.some((n) => !n.read)) return; // an earlier reminder hasn't been opened yet: don't pile on another
       const packBlocked = rd.packPendingSince !== null || packToday(rd, now).results.length >= PACK_PER_DAY;
       for (let tries = 0; tries < AUTO_SEQUENCE.length; tries++) {
         const slot = AUTO_SEQUENCE[autoIndex.current++ % AUTO_SEQUENCE.length];

@@ -124,10 +124,10 @@ export default function DemoPanel({
             onClick={() => onAutoNotify(!autoNotify)}
           >
             {autoNotify && <Icon name="check" size={16} />}
-            {autoNotify ? `On: a new one every ${AUTO_NOTIFY_MS / 1000} seconds` : "Off"}
+            {autoNotify ? `On: one every ${AUTO_NOTIFY_MS / 60000} minutes` : "Off"}
           </button>
           <p className="muted" style={{ margin: "6px 0 0" }}>
-            While you are in the Manager view, a reminder pops up by itself on a timer. They pause while a sheet is open. Turn this off, or press any button below to show one on demand.
+            While you are in the Manager view, a reminder pops up by itself now and then. It waits while a sheet is open, and until you have opened the last one. Turn this off, or press any button below to show one on demand.
           </p>
 
           <span className="field-label" id="trigger-label">Trigger a notification</span>

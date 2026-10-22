@@ -33,8 +33,9 @@ export const SLOTS: Slot[] = [
   { id: "dining-close-late", kind: "late", label: "Closing: follow-up 11:00", title: "Closing check not done yet", body: "It was due at 10:30 PM. Please do it now.", target: "dining", minutes: 23 * 60 },
 ];
 
-// Demo mode: one reminder pops up by itself this often, cycling through the list below (for showing the app to someone).
-export const AUTO_NOTIFY_MS = 30_000;
+// Demo mode: a reminder pops up by itself this often, cycling through the list below (for showing the app to someone).
+// It also waits until every earlier reminder has been opened, so they never pile up.
+export const AUTO_NOTIFY_MS = 120_000;
 export const AUTO_SEQUENCE = [
   "dining-open-remind",
   "dining-open-due",
