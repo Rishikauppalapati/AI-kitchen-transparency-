@@ -12,6 +12,7 @@ import ComplaintsInbox from "@/components/manager/ComplaintsInbox";
 import DeliveryCheck from "@/components/manager/DeliveryCheck";
 import DiningCheck from "@/components/manager/DiningCheck";
 import ManagerHome from "@/components/manager/ManagerHome";
+import { NotificationBanner, NotificationBell } from "@/components/manager/Notifications";
 import PhoneFrame from "@/components/PhoneFrame";
 import { restaurants } from "@/data/restaurants";
 import { AppProvider, useApp } from "@/lib/AppState";
@@ -148,6 +149,13 @@ function Shell() {
       <main className="screen" aria-label={ui.role === "diner" ? "Diner app" : "Manager app"}>
         {ui.role === "diner" ? renderDiner() : renderManager()}
       </main>
+
+      {ui.role === "manager" && (
+        <>
+          <NotificationBell restaurantId={restaurant.id} onStart={(n) => patch({ managerTab: n.target })} />
+          <NotificationBanner restaurantId={restaurant.id} onStart={(n) => patch({ managerTab: n.target })} />
+        </>
+      )}
 
       <DemoPanel
         role={ui.role}

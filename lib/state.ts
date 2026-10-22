@@ -6,11 +6,14 @@
 
 import { restaurants } from "@/data/restaurants";
 import { DINING_CHECKS, SETUP_CHECKS } from "./checkLabels";
+import { alreadyDone, SLOTS, slotsDue, type NotifyTarget, type Slot } from "./notifications";
 import { allChecked, TODO } from "./rules";
 import { DAY, HOUR } from "./time";
 import type { TileState } from "./types";
 
-export const VERSION = 1;
+export const VERSION = 2;
+export const SCHEDULE_LOOKBACK = 6 * HOUR; // after a long gap (or a big fast-forward) only the last 6 hours of reminders fire
+const MAX_NOTICES = 30;
 export const SHIFTS = ["11:30 AM", "6:30 PM"] as const;
 export type Shift = (typeof SHIFTS)[number];
 export const PACK_SECONDS = 600; // 10 minutes to answer a random pack check
@@ -39,6 +42,17 @@ export interface PackCheck {
   at: number;
   result: "passed" | "missed";
 }
+// A reminder for the manager: shown as a banner, then kept in the bell list.
+export interface Notice {
+  id: string;
+  key: string; // e.g. "dining-open-due:Thu Oct 22 2026", so the same reminder never fires twice in a day
+  title: string;
+  body: string;
+  at: number;
+  target: NotifyTarget; // which check screen "Start" opens
+  read: boolean;
+  banner: boolean; // still showing as the slide-in banner
+}
 
 export interface RestaurantData {
   // dining
@@ -57,10 +71,12 @@ export interface RestaurantData {
   failures: Record<string, number>; // non-passing attempts per tile, e.g. "dining:bins"
   flags: Flag[];
   complaints: Complaint[];
+  notices: Notice[];
 }
 
 export interface AppData {
   version: number;
+  lastScheduleAt: number; // reminders are checked for the time between this and "now"
   clockOffset: number; // demo clock = real time + this
   restaurants: Record<string, RestaurantData>;
 }
@@ -85,6 +101,7 @@ function base(): RestaurantData {
     failures: {},
     flags: [],
     complaints: [],
+    notices: [],
   };
 }
 
@@ -156,7 +173,7 @@ export function seedData(now: number): AppData {
     ],
   } satisfies Partial<RestaurantData>);
 
-  return { version: VERSION, clockOffset: 0, restaurants: r };
+  return { version: VERSION, lastScheduleAt: now, clockOffset: 0, restaurants: r };
 }
 
 // ---------- Selectors ----------
@@ -218,7 +235,12 @@ export type Action =
   | { type: "packPhoto"; rid: string; tile: TileState; now: number }
   | { type: "tickPack"; now: number }
   | { type: "addComplaint"; rid: string; complaint: Complaint; now: number }
-  | { type: "resolveComplaint"; rid: string; id: string; text: string; now: number };
+  | { type: "resolveComplaint"; rid: string; id: string; text: string; now: number }
+  | { type: "notify"; rid: string; slot: string; now: number } // a demo trigger button
+  | { type: "readNotice"; rid: string; id: string; now: number } // "Start" was pressed
+  | { type: "dismissBanner"; rid: string; id: string; now: number }
+  | { type: "readAllNotices"; rid: string; now: number } // the bell list was opened
+  | { type: "tickSchedule"; now: number };
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 export type ActionInput = DistributiveOmit<Action, "now">;
@@ -251,6 +273,37 @@ function expirePack(rd: RestaurantData, now: number): RestaurantData {
     packPendingSince: null,
     packNote: null,
   };
+}
+
+// A random pack check starts a 10-minute countdown. Null when one can't start (one is running, or all three are done).
+function startPackCheck(rd: RestaurantData, now: number): RestaurantData | null {
+  const live = expirePack(rd, now);
+  const { results } = packToday(live, now);
+  if (live.packPendingSince !== null || results.length >= PACK_PER_DAY) return null;
+  return { ...live, packPendingSince: now, packNote: null };
+}
+
+// Add a reminder. Only the newest one shows as a banner; older ones stay in the bell list.
+// A "quiet" entry goes straight into the list as already read (used to record a missed check).
+function addNotice(
+  rd: RestaurantData,
+  slot: Slot,
+  key: string,
+  at: number,
+  quiet?: { title: string; body: string },
+): RestaurantData {
+  const notice: Notice = {
+    id: `n-${at}-${slot.id}-${rd.notices.length}`,
+    key,
+    title: quiet?.title ?? slot.title,
+    body: quiet?.body ?? slot.body,
+    at,
+    target: slot.target,
+    read: !!quiet,
+    banner: !quiet,
+  };
+  const older = quiet ? rd.notices : rd.notices.map((n) => ({ ...n, banner: false }));
+  return { ...rd, notices: [notice, ...older].slice(0, MAX_NOTICES) };
 }
 
 export function reducer(state: AppData | null, action: Action): AppData | null {
@@ -313,12 +366,7 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
       });
 
     case "startPack":
-      return withRestaurant(state, action.rid, (rd) => {
-        const expired = expirePack(rd, action.now);
-        const { results } = packToday(expired, action.now);
-        if (expired.packPendingSince !== null || results.length >= PACK_PER_DAY) return expired;
-        return { ...expired, packPendingSince: action.now, packNote: null };
-      });
+      return withRestaurant(state, action.rid, (rd) => startPackCheck(rd, action.now) ?? expirePack(rd, action.now));
 
     case "packPhoto":
       return withRestaurant(state, action.rid, (rd) => {
@@ -344,6 +392,76 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
 
     case "addComplaint":
       return withRestaurant(state, action.rid, (rd) => ({ ...rd, complaints: [action.complaint, ...rd.complaints] }));
+
+    // A demo trigger button: fire this reminder now (a pack check also starts its countdown).
+    case "notify":
+      return withRestaurant(state, action.rid, (rd) => {
+        const slot = SLOTS.find((s) => s.id === action.slot);
+        if (!slot) return rd;
+        let next = rd;
+        if (slot.kind === "pack") {
+          const started = startPackCheck(rd, action.now);
+          if (!started) return rd;
+          next = started;
+        }
+        return addNotice(next, slot, `manual:${action.now}:${slot.id}`, action.now);
+      });
+
+    case "readNotice":
+      return withRestaurant(state, action.rid, (rd) => ({
+        ...rd,
+        notices: rd.notices.map((n) => (n.id === action.id ? { ...n, read: true, banner: false } : n)),
+      }));
+
+    case "dismissBanner":
+      return withRestaurant(state, action.rid, (rd) => ({
+        ...rd,
+        notices: rd.notices.map((n) => (n.id === action.id ? { ...n, banner: false } : n)),
+      }));
+
+    case "readAllNotices":
+      return withRestaurant(state, action.rid, (rd) =>
+        rd.notices.some((n) => !n.read || n.banner) ? { ...rd, notices: rd.notices.map((n) => ({ ...n, read: true, banner: false })) } : rd,
+      );
+
+    // The automatic schedule, driven by the demo clock: fires whatever became due since the last check.
+    case "tickSchedule": {
+      const from = Math.max(state.lastScheduleAt, action.now - SCHEDULE_LOOKBACK);
+      if (action.now <= from) return state;
+      let fired = false;
+      const next: Record<string, RestaurantData> = {};
+      for (const [rid, original] of Object.entries(state.restaurants)) {
+        let rd = original;
+        for (const { slot, ts, key } of slotsDue(rid, from, action.now)) {
+          if (rd.notices.some((n) => n.key === key)) continue; // already fired
+          if (alreadyDone(slot, rd, ts)) continue; // the check was done in time, nothing to remind about
+          if (slot.kind === "pack") {
+            const ranOutAt = ts + PACK_SECONDS * 1000;
+            if (action.now > ranOutAt) {
+              // Its 10 minutes passed while nobody was watching (for example, a big fast-forward): record it as missed.
+              const live = expirePack(rd, action.now);
+              if (packToday(live, ts).results.length >= PACK_PER_DAY) continue;
+              rd = addNotice({ ...live, packChecks: [...live.packChecks, { at: ranOutAt, result: "missed" }] }, slot, key, ranOutAt, {
+                title: "Random pack check missed",
+                body: "No photo was taken within 10 minutes.",
+              });
+              fired = true;
+              continue;
+            }
+            const started = startPackCheck(rd, action.now);
+            if (!started) continue;
+            rd = addNotice(started, slot, key, action.now);
+          } else {
+            rd = addNotice(rd, slot, key, ts);
+          }
+          fired = true;
+        }
+        next[rid] = rd;
+      }
+      const stale = action.now - state.lastScheduleAt > 30 * 60_000;
+      if (!fired && !stale) return state;
+      return { ...state, lastScheduleAt: action.now, restaurants: next };
+    }
 
     case "resolveComplaint":
       return withRestaurant(state, action.rid, (rd) => ({

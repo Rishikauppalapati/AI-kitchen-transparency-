@@ -67,6 +67,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const t = Date.now();
         setReal(t);
         dispatch({ type: "tickPack", now: t + offset.current });
+        dispatch({ type: "tickSchedule", now: t + offset.current });
       },
       counting ? 1000 : 10_000,
     );
@@ -78,6 +79,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const t = Date.now();
     setReal(t);
     dispatch({ ...a, now: t + offset.current } as Action);
+    // After a fast-forward, fire whatever just became due without waiting for the next tick.
+    if (a.type === "clock") {
+      const after = t + offset.current + a.ms;
+      dispatch({ type: "tickPack", now: after });
+      dispatch({ type: "tickSchedule", now: after });
+    }
   }, []);
 
   const reset = useCallback(() => {

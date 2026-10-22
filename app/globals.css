@@ -1055,6 +1055,116 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Step 7: notifications ---------- */
+
+.bell {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 15;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--amber-text);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.banner {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  border: 2px solid var(--teal);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+  animation: banner-in 0.35s ease-out;
+}
+
+.banner .btn {
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+@keyframes banner-in {
+  from {
+    transform: translateY(-130%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation: none;
+  }
+}
+
+.trigger-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.seg-btn.small {
+  min-height: 48px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.seg-btn.wide {
+  grid-column: 1 / -1;
+}
+
+.seg-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notice-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.notice-list li:last-child {
+  border-bottom: 0;
+}
+
+.new-chip {
+  margin-left: 8px;
+}
+
 .demo-preview {
   display: block;
   width: 100%;

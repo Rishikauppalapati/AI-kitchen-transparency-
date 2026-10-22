@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "./Icons";
 import Sheet from "./Sheet";
 import { useApp } from "@/lib/AppState";
+import { MANUAL_SLOTS } from "@/lib/notifications";
 import { PACK_PER_DAY, packToday } from "@/lib/state";
 import { DAY, HOUR } from "@/lib/time";
 import type { Restaurant, Role } from "@/lib/types";
@@ -15,7 +16,7 @@ function offsetText(ms: number): string {
   return `+${days > 0 ? `${days} day${days === 1 ? "" : "s"}` : ""}${days > 0 && hours > 0 ? " " : ""}${hours > 0 ? `${hours} hour${hours === 1 ? "" : "s"}` : ""}`;
 }
 
-// The floating demo controls. Notification triggers arrive in step 7.
+// The floating demo controls.
 export default function DemoPanel({
   role,
   onRole,
@@ -42,6 +43,13 @@ export default function DemoPanel({
   const rd = data.restaurants[restaurantId];
   const packBusy = rd.packPendingSince !== null;
   const packFull = packToday(rd, now).results.length >= PACK_PER_DAY;
+
+  // Reminders show up in the manager's view, so switch to it and close the panel to see the banner.
+  function trigger(slot: string) {
+    onRole("manager");
+    act({ type: "notify", rid: restaurantId, slot });
+    setOpen(false);
+  }
 
   return (
     <>
@@ -101,22 +109,25 @@ export default function DemoPanel({
             {showExpected ? "On" : "Off"}
           </button>
 
-          <span className="field-label" id="trigger-label">Trigger</span>
-          <button
-            type="button"
-            className="btn btn-outline full"
-            aria-labelledby="trigger-label"
-            disabled={packBusy || packFull}
-            onClick={() => {
-              act({ type: "startPack", rid: restaurantId });
-              setOpen(false);
-            }}
-          >
-            <Icon name="bell" size={18} />
-            Random pack check
-          </button>
+          <span className="field-label" id="trigger-label">Trigger a notification</span>
+          <div className="trigger-grid" role="group" aria-labelledby="trigger-label">
+            {MANUAL_SLOTS.map((s) => (
+              <button key={s.id} type="button" className="seg-btn small" onClick={() => trigger(s.id)}>
+                {s.label}
+              </button>
+            ))}
+            <button type="button" className="seg-btn small wide" disabled={packBusy || packFull} onClick={() => trigger("pack-1")}>
+              <Icon name="bell" size={16} />
+              Random pack check
+            </button>
+          </div>
           <p className="muted" style={{ margin: "6px 0 0" }}>
-            {packBusy ? "One is already counting down." : packFull ? "All three are done for today." : "Starts a 10-minute countdown for this restaurant."}
+            {packBusy
+              ? "A pack check is already counting down."
+              : packFull
+                ? "All three pack checks are done for today."
+                : "Shows a banner for this restaurant. A pack check also starts its 10-minute countdown."}{" "}
+            The same reminders also fire by themselves as the demo clock passes their time.
           </p>
 
           <span className="field-label">Start over</span>
