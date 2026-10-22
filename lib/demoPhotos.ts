@@ -4,7 +4,7 @@
 // (the notes below are the AI's own words). Demo photos use the saved result by default, so a demo is instant and
 // always the same: tidy photos turn green and untidy ones turn amber, whatever Google's AI service is doing that day.
 // The tile says "demo photo" so nobody mistakes it for a live check. The "Live AI for demo photos" switch in the
-// demo controls runs the real AI on them instead. Take photo and Upload always run the live AI.
+// demo controls runs the real AI on them instead. Take photo always runs the live AI.
 
 import type { AiResult } from "./types";
 

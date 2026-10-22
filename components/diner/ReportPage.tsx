@@ -28,7 +28,6 @@ export default function ReportPage({
   const [category, setCategory] = useState<string | null>(null);
   const [seal, setSeal] = useState<Seal | null>(null);
   const [note, setNote] = useState("");
-  const [photoName, setPhotoName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sentId, setSentId] = useState<string | null>(null);
 
@@ -79,7 +78,6 @@ export default function ReportPage({
               setCategory(null);
               setSeal(null);
               setNote("");
-              setPhotoName(null);
             }}
           >
             Report another problem
@@ -118,18 +116,6 @@ export default function ReportPage({
 
           <label className="field-label" htmlFor="note">Note (optional)</label>
           <textarea id="note" className="textarea" rows={3} value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} />
-
-          <span className="field-label" id="photo-label">Photo (optional)</span>
-          <label className="btn btn-outline file-btn">
-            <Icon name="plus" size={18} />
-            {photoName ?? "Add a photo"}
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              aria-labelledby="photo-label"
-              onChange={(e) => setPhotoName(e.target.files?.[0]?.name ?? null)}
-            />
-          </label>
 
           {error && (
             <p className="form-error" role="alert">

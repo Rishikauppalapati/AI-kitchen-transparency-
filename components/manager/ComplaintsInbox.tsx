@@ -77,7 +77,6 @@ function FixSheet({
   onClose: () => void;
 }) {
   const [text, setText] = useState("");
-  const [photo, setPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function save() {
@@ -92,18 +91,6 @@ function FixSheet({
       </p>
       <label className="field-label" htmlFor="fix-text">What did you change?</label>
       <textarea id="fix-text" className="textarea" rows={3} maxLength={200} value={text} onChange={(e) => setText(e.target.value)} />
-
-      <span className="field-label" id="fix-photo-label">Photo of the fix (optional)</span>
-      <label className="btn btn-outline file-btn">
-        <Icon name="camera" size={18} />
-        {photo ?? "Add a photo"}
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          aria-labelledby="fix-photo-label"
-          onChange={(e) => setPhoto(e.target.files?.[0]?.name ?? null)}
-        />
-      </label>
 
       {error && (
         <p className="form-error" role="alert">

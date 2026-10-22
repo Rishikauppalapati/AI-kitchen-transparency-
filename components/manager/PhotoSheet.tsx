@@ -8,7 +8,7 @@ import { checkPhoto } from "@/lib/checkPhoto";
 import { demoPath, demoPhotoExists, demoPhotosFor, demoUrl, expectedText, loadDemoPhoto, type DemoPhoto } from "@/lib/demoPhotos";
 import type { AiResult } from "@/lib/types";
 
-// Take photo and Upload always run the live AI (POST /api/check).
+// Take photo always runs the live AI (POST /api/check). File upload is switched off for now.
 // A demo photo applies the result the real AI gave that exact image when it was tested, instantly, so a demo is
 // always the same (tidy goes green, untidy goes amber). With "Live AI for demo photos" on, it runs the live AI
 // instead, and falls back to the saved result if the AI service is busy or unavailable.
@@ -128,11 +128,6 @@ export default function PhotoSheet({
           Take photo
           <input type="file" accept="image/*" capture="environment" onChange={onFile} disabled={busy} />
         </label>
-        <label className="btn btn-outline file-btn" aria-disabled={busy}>
-          <Icon name="upload" size={20} />
-          Upload
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onFile} disabled={busy} />
-        </label>
       </div>
 
       <label className="field-label" htmlFor="demo-photo">Use a demo photo</label>
@@ -168,7 +163,7 @@ export default function PhotoSheet({
       <p className="muted" style={{ margin: "8px 0 0" }}>
         {liveDemo
           ? "Live AI for demo photos is on: the real AI checks the picture (if it is unavailable, the saved result is used)."
-          : "A demo photo uses the result the real AI gave this exact picture when it was tested, so it is instant and always the same. Take photo and Upload always run the live AI."}
+          : "A demo photo uses the result the real AI gave this exact picture when it was tested, so it is instant and always the same. Take photo always runs the live AI."}
       </p>
 
       <div role="status" aria-live="polite">

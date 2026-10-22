@@ -131,7 +131,7 @@ export default function DemoPanel({
             {liveDemo ? "On: demo photos run the real AI" : "Off: demo photos use their saved result"}
           </button>
           <p className="muted" style={{ margin: "6px 0 0" }}>
-            Off is best for showing someone: tidy photos are always green and untidy ones always amber, instantly. Turn it on to show the real AI judging them (if the AI is busy, the saved result is used). Take photo and Upload always use the live AI.
+            Off is best for showing someone: tidy photos are always green and untidy ones always amber, instantly. Turn it on to show the real AI judging them (if the AI is busy, the saved result is used). Take photo always uses the live AI.
           </p>
 
           <span className="field-label" id="auto-label">Auto notifications</span>
