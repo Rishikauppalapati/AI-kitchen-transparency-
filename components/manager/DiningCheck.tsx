@@ -80,9 +80,9 @@ export default function DiningCheck({
         </p>
 
         <button type="button" className="btn btn-primary full" disabled={!ready} onClick={() => setOpen({ kind: "otp" })}>
-          Sign off with OTP
+          Complete verification with OTP
         </button>
-        {!ready && <p className="muted center">All six checks must be green to sign off. Diners see nothing until then.</p>}
+        {!ready && <p className="muted center">All six checks must be green to complete verification. Diners see nothing until then.</p>}
       </div>
 
       {open?.kind === "photo" && (
@@ -164,7 +164,7 @@ function OtpSheet({ onDone, onClose }: { onDone: () => void; onClose: () => void
   }
 
   return (
-    <Sheet title="Sign off with OTP" onClose={onClose}>
+    <Sheet title="Complete verification" onClose={onClose}>
       <label className="field-label first" htmlFor="otp">Enter the 4-digit code</label>
       <input
         id="otp"
@@ -185,7 +185,7 @@ function OtpSheet({ onDone, onClose }: { onDone: () => void; onClose: () => void
         </p>
       )}
       <button type="button" className="btn btn-primary full" style={{ marginTop: 14 }} disabled={code.length < 4} onClick={verify}>
-        Sign off
+        Complete verification
       </button>
     </Sheet>
   );
