@@ -160,23 +160,6 @@ export default function DeliveryCheck({
             </p>
           )}
         </section>
-
-        {/* Layer 3 */}
-        <section className="card block" aria-labelledby="handled-title">
-          <h2 id="handled-title">3. Handled for you</h2>
-          <p className="chip chip-grey">Simulated in demo (needs platform data)</p>
-          <ul className="check-list">
-            <li>
-              <span className="tick" aria-hidden="true"><Icon name="check" size={16} /></span>
-              <span className="grow">Rider confirmed seal at pickup</span>
-            </li>
-            <li>
-              <span className="tick" aria-hidden="true"><Icon name="clock" size={16} /></span>
-              <span className="grow">Prep to handover</span>
-              <strong>6 min</strong>
-            </li>
-          </ul>
-        </section>
       </div>
 
       {photoFor && (

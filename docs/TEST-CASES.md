@@ -33,7 +33,6 @@ The AI runs on Google's free tier, which allows 15 photo checks per minute on th
 | DL-05 | Give it a passing photo. | Slot shows "Passed" and the diner count goes up by one. | Passed | Browser |
 | DL-06 | Let the 10 minutes run out. | Slot shows "Missed". It does not count toward the diner's "n of 3". | Passed | Browser (sped-up timer) |
 | DL-07 | Fast-forward the demo clock past a surprise packing check's window. | Recorded as missed, with a quiet entry in the bell list. | Passed | Browser |
-| DL-08 | Look at "Handled for you". | Labelled "Simulated in demo (needs platform data)". | Passed | Browser |
 
 ## 3. Diner screens
 
