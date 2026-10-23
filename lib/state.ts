@@ -11,7 +11,7 @@ import { allChecked, TODO } from "./rules";
 import { DAY, HOUR } from "./time";
 import type { TileState } from "./types";
 
-export const VERSION = 2;
+export const VERSION = 3;
 export const SCHEDULE_LOOKBACK = 6 * HOUR; // after a long gap (or a big fast-forward) only the last 6 hours of reminders fire
 const MAX_NOTICES = 30;
 export const SHIFTS = ["11:30 AM", "6:30 PM"] as const;
@@ -41,6 +41,7 @@ export interface Flag {
 export interface PackCheck {
   at: number;
   result: "passed" | "missed";
+  photo?: string; // evidence picture of a passed check
 }
 // A reminder for the manager: shown as a banner, then kept in the bell list.
 export interface Notice {
@@ -58,7 +59,7 @@ export interface RestaurantData {
   // dining
   diningDraft: Tiles;
   diningFridgeC: number | null;
-  diningSnapshot: { verifiedAt: number; fridgeC: number; signedBy: string } | null;
+  diningSnapshot: { verifiedAt: number; fridgeC: number; signedBy: string; photos?: Record<string, string> } | null;
   diningSignoffs: number[];
   // delivery
   setupDraft: Record<Shift, Tiles>;
@@ -105,19 +106,29 @@ function base(): RestaurantData {
   };
 }
 
+// Sample evidence pictures for the fictional restaurants (the demo photos in public/demo).
+const SAMPLE_PHOTOS = {
+  caps_gloves: "/demo/caps_gloves_tidy.jpg",
+  floors_drains: "/demo/floors_tidy.jpg",
+  stock_labels: "/demo/labels_tidy.jpg",
+  bins: "/demo/bins_tidy.jpg",
+  handwash: "/demo/handwash_tidy.jpg",
+};
+const SAMPLE_PACK = "/demo/pack_tidy.jpg";
+
 export function seedData(now: number): AppData {
   const ago = (h: number) => now - h * HOUR;
   const days = (d: number) => now - d * DAY;
   const r: Record<string, RestaurantData> = Object.fromEntries(restaurants.map((x) => [x.id, base()]));
 
   Object.assign(r["sample-cafe"], {
-    diningSnapshot: { verifiedAt: ago(2), fridgeC: 3.5, signedBy: "Sample manager" },
+    diningSnapshot: { verifiedAt: ago(2), fridgeC: 3.5, signedBy: "Sample manager", photos: SAMPLE_PHOTOS },
     diningSignoffs: [ago(2)],
     deliverySnapshot: { verifiedAt: ago(3), shift: "11:30 AM" },
     setupConfirmed: [{ shift: "11:30 AM", at: ago(3) }],
     packChecks: [
-      { at: ago(2), result: "passed" },
-      { at: ago(1), result: "passed" },
+      { at: ago(2), result: "passed", photo: SAMPLE_PACK },
+      { at: ago(1), result: "passed", photo: SAMPLE_PACK },
     ],
     complaints: [
       {
@@ -142,10 +153,10 @@ export function seedData(now: number): AppData {
   } satisfies Partial<RestaurantData>);
 
   Object.assign(r["sample-biryani-house"], {
-    diningSnapshot: { verifiedAt: ago(30), fridgeC: 4.5, signedBy: "Sample manager" },
+    diningSnapshot: { verifiedAt: ago(30), fridgeC: 4.5, signedBy: "Sample manager", photos: SAMPLE_PHOTOS },
     deliverySnapshot: { verifiedAt: ago(8), shift: "11:30 AM" },
     setupConfirmed: [{ shift: "11:30 AM", at: ago(8) }],
-    packChecks: [{ at: ago(1), result: "passed" }],
+    packChecks: [{ at: ago(1), result: "passed", photo: SAMPLE_PACK }],
     flags: [{ key: "dining:handwash", label: "Handwash station", at: ago(5) }],
     complaints: [
       {
@@ -162,14 +173,13 @@ export function seedData(now: number): AppData {
   } satisfies Partial<RestaurantData>);
 
   Object.assign(r["sample-bakery"], {
-    diningSnapshot: { verifiedAt: now - 0.3 * HOUR, fridgeC: 2.8, signedBy: "Sample manager" },
+    diningSnapshot: { verifiedAt: now - 0.3 * HOUR, fridgeC: 2.8, signedBy: "Sample manager", photos: SAMPLE_PHOTOS },
     diningSignoffs: [now - 0.3 * HOUR],
     deliverySnapshot: { verifiedAt: ago(1), shift: "11:30 AM" },
     setupConfirmed: [{ shift: "11:30 AM", at: ago(1) }],
     packChecks: [
-      { at: ago(3), result: "passed" },
-      { at: ago(2), result: "passed" },
-      { at: ago(1), result: "passed" },
+      { at: ago(3), result: "passed", photo: SAMPLE_PACK },
+      { at: ago(2), result: "passed", photo: SAMPLE_PACK },
     ],
   } satisfies Partial<RestaurantData>);
 
@@ -343,7 +353,12 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
         if (!allChecked(Object.values(rd.diningDraft)) || rd.diningFridgeC === null) return rd;
         return {
           ...rd,
-          diningSnapshot: { verifiedAt: action.now, fridgeC: rd.diningFridgeC, signedBy: action.signedBy },
+          diningSnapshot: {
+            verifiedAt: action.now,
+            fridgeC: rd.diningFridgeC,
+            signedBy: action.signedBy,
+            photos: Object.fromEntries(Object.entries(rd.diningDraft).flatMap(([id, t]) => (t.photo ? [[id, t.photo]] : []))),
+          },
           diningSignoffs: [...rd.diningSignoffs, action.now],
           diningDraft: emptyDining(), // ready for the next check
           diningFridgeC: null,
@@ -372,8 +387,8 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
         const live = expirePack(rd, action.now);
         if (live.packPendingSince === null) return live; // too late: it was recorded as missed
         if (action.tile.state === "checked") {
-          // Only a passed random check counts toward "n of 3" on the diner page.
-          return { ...live, packChecks: [...live.packChecks, { at: action.now, result: "passed" }], packPendingSince: null, packNote: null };
+          // Only a passed surprise packing check shows on the diner page.
+          return { ...live, packChecks: [...live.packChecks, { at: action.now, result: "passed", ...(action.tile.photo ? { photo: action.tile.photo } : {}) }], packPendingSince: null, packNote: null };
         }
         return { ...live, packNote: action.tile.note ?? "Retake needed" };
       });

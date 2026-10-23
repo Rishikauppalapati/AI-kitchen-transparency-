@@ -7,7 +7,7 @@ import { Icon } from "../Icons";
 import RestaurantChips from "../RestaurantChips";
 import OrderSheet from "./OrderSheet";
 import { useApp } from "@/lib/AppState";
-import { COMPLAINT_DAYS, PACK_PER_DAY, packToday, type Complaint as ComplaintData } from "@/lib/state";
+import { COMPLAINT_DAYS, packToday, type Complaint as ComplaintData } from "@/lib/state";
 import { DAY, deliveryFreshness, HOUR, timeAgo, type Freshness } from "@/lib/time";
 import type { Restaurant } from "@/lib/types";
 
@@ -54,7 +54,7 @@ export default function DeliveryPage({
 
   const snap = rd.deliverySnapshot;
   const fresh = snap ? deliveryFreshness((now - snap.verifiedAt) / HOUR) : NEVER;
-  const passed = packToday(rd, now).passed;
+  const passedChecks = packToday(rd, now).results.filter((p) => p.result === "passed");
   const recent = rd.complaints.filter((c) => c.steps[0].at >= now - COMPLAINT_DAYS * DAY);
 
   return (
@@ -77,19 +77,22 @@ export default function DeliveryPage({
           )}
 
           <h3>Surprise packing checks today</h3>
-          <div className="dots" role="img" aria-label={`${passed} of ${PACK_PER_DAY} surprise packing checks passed today`}>
-            {Array.from({ length: PACK_PER_DAY }, (_, i) => (
-              <span key={i} className={`pack-dot ${i < passed ? "on" : ""}`}>
-                {i < passed ? <Icon name="check" size={16} /> : i + 1}
-              </span>
-            ))}
-            <span className="grow">
-              <strong>
-                {passed} of {PACK_PER_DAY}
-              </strong>{" "}
-              passed
-            </span>
-          </div>
+          {passedChecks.length > 0 ? (
+            <div className="evidence-row" role="group" aria-label="Photos from today's surprise packing checks">
+              {passedChecks.map((p, i) =>
+                p.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} className="evidence-thumb big" src={p.photo} alt="Packed order that passed a surprise check" />
+                ) : (
+                  <span key={i} className="pack-dot on">
+                    <Icon name="check" size={16} />
+                  </span>
+                ),
+              )}
+            </div>
+          ) : (
+            <p className="muted">No surprise packing checks yet today.</p>
+          )}
 
           {snap && (
             <ul className="check-list" style={{ marginTop: 12 }}>
@@ -97,14 +100,12 @@ export default function DeliveryPage({
                 <span className="tick" aria-hidden="true"><Icon name="check" size={16} /></span>
                 <span className="grow">Hot and cold kept apart at setup</span>
               </li>
-              <li>
-                <span className="tick" aria-hidden="true"><Icon name="check" size={16} /></span>
-                <span className="grow">
-                  {passed > 0
-                    ? `Seal sticker seen on ${passed} passed packing ${passed === 1 ? "check" : "checks"}`
-                    : "No surprise packing checks passed yet today"}
-                </span>
-              </li>
+              {passedChecks.length > 0 && (
+                <li>
+                  <span className="tick" aria-hidden="true"><Icon name="check" size={16} /></span>
+                  <span className="grow">Seal sticker seen in today&apos;s packing photos</span>
+                </li>
+              )}
             </ul>
           )}
           <p className="label-tag">Self-reported, AI-checked</p>

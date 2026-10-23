@@ -168,8 +168,8 @@ export default function DeliveryCheck({
           title={photoFor === "random_pack" ? "Packing check photo" : (SETUP_CHECKS.find((c) => c.id === photoFor)?.label ?? "Photo check")}
           showExpected={showExpected}
           liveDemo={liveDemo}
-          onResult={(r, via) => {
-            const tile = tileFromAi(r, via);
+          onResult={(r, via, photo) => {
+            const tile = tileFromAi(r, via, photo);
             if (photoFor === "random_pack") act({ type: "packPhoto", rid: restaurant.id, tile });
             else act({ type: "setupTile", rid: restaurant.id, shift, id: photoFor, tile });
           }}

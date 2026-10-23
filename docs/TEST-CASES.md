@@ -52,6 +52,8 @@ The AI runs on Google's free tier, which allows 15 photo checks per minute on th
 | DV-12 | Send a report. | A status timeline appears, and the complaint shows in the manager's Complaints inbox. | Passed | Browser |
 | DV-13 | Manager records the fix by picking what the customer got (refund, replacement, voucher or apology) and what the kitchen did. | The diner's delivery history shows "Fix recorded: Full refund, Coupon or voucher. Kitchen: called the customer back...". | Passed | Browser |
 | DV-14 | Try to mark a complaint resolved with nothing picked for the customer. | "Pick what the customer got." Nothing changes. Choosing "Apology only" clears the refund, replacement and voucher options. | Passed | Browser |
+| DV-15 | Complete a dining check with demo photos, then open the restaurant as a diner. | Each passed check shows its photo as a small picture. No "Evidence level 1 of 3" line. The fridge shows its reading. | Passed | Browser |
+| DV-16 | Pass a surprise packing check with a photo, then open the diner Delivery page. | The photos of today's passed packing checks show as pictures. No "n of 2" counter. | Passed | Browser |
 
 ## 4. Rules that protect the diner's view
 

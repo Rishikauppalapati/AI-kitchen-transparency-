@@ -5,6 +5,7 @@ import { Icon } from "../Icons";
 import Sheet from "../Sheet";
 import { CHECK_HELP } from "@/lib/checkHelp";
 import { checkPhoto } from "@/lib/checkPhoto";
+import { thumbnailDataUrl } from "@/lib/image";
 import { demoPath, demoPhotoExists, demoPhotosFor, demoUrl, expectedText, loadDemoPhoto, type DemoPhoto } from "@/lib/demoPhotos";
 import type { AiResult } from "@/lib/types";
 
@@ -25,7 +26,7 @@ export default function PhotoSheet({
   title: string;
   showExpected: boolean;
   liveDemo: boolean;
-  onResult: (r: AiResult, via: "ai" | "demo") => void;
+  onResult: (r: AiResult, via: "ai" | "demo", photo?: string) => void;
   onError: (retryAfterSeconds?: number) => void; // the AI or network failed: the tile turns amber
   onClose: () => void;
 }) {
@@ -56,11 +57,12 @@ export default function PhotoSheet({
     setBusy(false);
 
     if (outcome.kind === "result") {
-      onResult(outcome.result, "ai");
+      const evidence = demo ? demoUrl(demo.name) : await thumbnailDataUrl(file).catch(() => undefined);
+      onResult(outcome.result, "ai", evidence);
       onClose();
     } else if (outcome.kind === "error") {
       if (demo) {
-        onResult(demo.expected, "demo"); // the live AI is unavailable: use this demo photo's saved result
+        onResult(demo.expected, "demo", demoUrl(demo.name)); // the live AI is unavailable: use this demo photo's saved result
       } else {
         onError(outcome.retryAfterSeconds);
       }
@@ -82,7 +84,7 @@ export default function PhotoSheet({
     setProblem(null);
     setMissing(null);
     if (!liveDemo) {
-      onResult(photo.expected, "demo"); // the saved result: instant and always the same
+      onResult(photo.expected, "demo", demoUrl(photo.name)); // the saved result: instant and always the same
       onClose();
       return;
     }

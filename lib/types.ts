@@ -18,6 +18,7 @@ export interface TileState {
   note?: string;
   error?: boolean; // the AI or network failed: amber, but not the manager's fault, so it is not counted as a failed attempt
   via?: "ai" | "demo"; // "ai": judged live by the AI just now. "demo": the saved result of a demo photo.
+  photo?: string; // a small picture of the passed photo (a demo image path or a tiny data URL), shown to diners as evidence
 }
 
 export type RaidState = "resolved" | "unresolved" | "none";

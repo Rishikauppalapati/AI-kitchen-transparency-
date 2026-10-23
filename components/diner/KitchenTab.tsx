@@ -25,7 +25,6 @@ export default function KitchenTab({ restaurant }: { restaurant: Restaurant }) {
             <p className="big">
               Last verified: <strong>{timeAgo(snap.verifiedAt, now)}</strong>
             </p>
-            <p className="muted">Evidence level 1 of 3: photo</p>
 
             <h3>{fresh.stale ? "Last known checks" : "Today's checks"}</h3>
             <ul className={`check-list ${fresh.stale ? "is-stale" : ""}`}>
@@ -35,6 +34,10 @@ export default function KitchenTab({ restaurant }: { restaurant: Restaurant }) {
                     <Icon name="check" size={16} />
                   </span>
                   <span className="grow">{c.label}</span>
+                  {snap.photos?.[c.id] && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="evidence-thumb" src={snap.photos[c.id]} alt={`Photo evidence: ${c.label}`} />
+                  )}
                   {c.id === "fridge" ? (
                     <span className="reading">{snap.fridgeC.toFixed(1)}°C</span>
                   ) : (

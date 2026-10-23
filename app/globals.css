@@ -1301,3 +1301,24 @@ button {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+.evidence-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--border, #e2ded5);
+  flex: none;
+}
+
+.evidence-thumb.big {
+  width: 84px;
+  height: 84px;
+}
+
+.evidence-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
