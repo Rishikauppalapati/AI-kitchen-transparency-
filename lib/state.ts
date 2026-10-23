@@ -128,7 +128,7 @@ export function seedData(now: number): AppData {
         steps: [
           { label: "Reported by a diner", at: days(9) },
           { label: "Kitchen responded", at: days(9) },
-          { label: "Fix recorded: new double-seal routine (photo)", at: days(8) },
+          { label: "Fix recorded: new double-seal routine", at: days(8) },
         ],
       },
       {

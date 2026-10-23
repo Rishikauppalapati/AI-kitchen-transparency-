@@ -50,7 +50,8 @@ The AI runs on Google's free tier, which allows 15 photo checks per minute on th
 | DV-10 | Open News. | Five real reports worded as reported, each with a source link that opens in a new tab. A note says they are separate from the sample restaurants. | Passed | Browser |
 | DV-11 | Report a problem with nothing chosen, then with a category only. | Error messages ask for the category, then for the seal answer. | Passed | Browser |
 | DV-12 | Send a report. | A status timeline appears, and the complaint shows in the manager's Complaints inbox. | Passed | Browser |
-| DV-13 | Manager records the fix. | The diner's delivery history shows "Fix recorded: ...". | Passed | Browser |
+| DV-13 | Manager records the fix by picking what the customer got (refund, replacement, voucher or apology) and what the kitchen did. | The diner's delivery history shows "Fix recorded: Full refund, Coupon or voucher. Kitchen: called the customer back...". | Passed | Browser |
+| DV-14 | Try to mark a complaint resolved with nothing picked for the customer. | "Pick what the customer got." Nothing changes. Choosing "Apology only" clears the refund, replacement and voucher options. | Passed | Browser |
 
 ## 4. Rules that protect the diner's view
 
