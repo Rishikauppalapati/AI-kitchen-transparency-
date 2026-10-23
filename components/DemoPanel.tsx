@@ -123,15 +123,15 @@ export default function DemoPanel({
             ))}
             <button type="button" className="seg-btn small wide" disabled={packBusy || packFull} onClick={() => trigger("pack-1")}>
               <Icon name="bell" size={16} />
-              Random pack check
+              Surprise packing check
             </button>
           </div>
           <p className="muted" style={{ margin: "6px 0 0" }}>
             {packBusy
-              ? "A pack check is already counting down."
+              ? "A surprise packing check is already counting down."
               : packFull
-                ? "All three pack checks are done for today."
-                : "Shows a banner for this restaurant. A pack check also starts its 10-minute countdown."}{" "}
+                ? "Both surprise packing checks are done for today."
+                : "Shows a banner for this restaurant. A surprise packing check also starts its 10-minute countdown."}{" "}
             The same reminders also fire by themselves as the demo clock passes their time.
           </p>
             </>

@@ -76,8 +76,8 @@ export default function DeliveryPage({
             </p>
           )}
 
-          <h3>Pack checks today</h3>
-          <div className="dots" role="img" aria-label={`${passed} of ${PACK_PER_DAY} pack checks passed today`}>
+          <h3>Surprise packing checks today</h3>
+          <div className="dots" role="img" aria-label={`${passed} of ${PACK_PER_DAY} surprise packing checks passed today`}>
             {Array.from({ length: PACK_PER_DAY }, (_, i) => (
               <span key={i} className={`pack-dot ${i < passed ? "on" : ""}`}>
                 {i < passed ? <Icon name="check" size={16} /> : i + 1}
@@ -101,8 +101,8 @@ export default function DeliveryPage({
                 <span className="tick" aria-hidden="true"><Icon name="check" size={16} /></span>
                 <span className="grow">
                   {passed > 0
-                    ? `Seal sticker seen on ${passed} passed pack ${passed === 1 ? "check" : "checks"}`
-                    : "No pack checks passed yet today"}
+                    ? `Seal sticker seen on ${passed} passed packing ${passed === 1 ? "check" : "checks"}`
+                    : "No surprise packing checks passed yet today"}
                 </span>
               </li>
             </ul>

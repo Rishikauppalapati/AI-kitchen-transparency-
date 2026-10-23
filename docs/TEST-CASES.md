@@ -28,11 +28,11 @@ The AI runs on Google's free tier, which allows 15 photo checks per minute on th
 |---|---|---|---|---|
 | DL-01 | Open Delivery check. | Three setup tiles. "Confirm setup" disabled until all three are green. | Passed | Browser |
 | DL-02 | Work on the 11:30 AM shift, then switch to 6:30 PM. | The two shifts have separate tiles. | Passed | Browser |
-| DL-03 | Trigger a random pack check. | A card with a 10:00 countdown and a banner. | Passed | Browser |
-| DL-04 | Give the pack check a failing photo. | Note shown, the check stays open, you can retake. | Passed | Browser, real AI |
+| DL-03 | Trigger a surprise packing check. | A card with a 10:00 countdown and a banner. | Passed | Browser |
+| DL-04 | Give the packing check a failing photo. | Note shown, the check stays open, you can retake. | Passed | Browser, real AI |
 | DL-05 | Give it a passing photo. | Slot shows "Passed" and the diner count goes up by one. | Passed | Browser |
 | DL-06 | Let the 10 minutes run out. | Slot shows "Missed". It does not count toward the diner's "n of 3". | Passed | Browser (sped-up timer) |
-| DL-07 | Fast-forward the demo clock past a pack check's window. | Recorded as missed, with a quiet entry in the bell list. | Passed | Browser |
+| DL-07 | Fast-forward the demo clock past a surprise packing check's window. | Recorded as missed, with a quiet entry in the bell list. | Passed | Browser |
 | DL-08 | Look at "Handled for you". | Labelled "Simulated in demo (needs platform data)". | Passed | Browser |
 
 ## 3. Diner screens
@@ -46,7 +46,7 @@ The AI runs on Google's free tier, which allows 15 photo checks per minute on th
 | DV-05 | Open the unresolved-raid restaurant. | "No follow-up found in our sources as of <today>". The words "not fixed" appear nowhere. | Passed | Browser |
 | DV-06 | Open the restaurant with no raid. | "No raids reported in our sources", streak, latest passed checks. | Passed | Browser |
 | DV-07 | Book a table. | Confirm stays disabled until a date and a time are chosen. Success screen says it is a demo. | Passed | Browser |
-| DV-08 | Open the Delivery tab. | Freshness badge, "n of 3" pack checks, complaints from the last 30 days with timelines. | Passed | Browser |
+| DV-08 | Open the Delivery tab. | Freshness badge, "n of 2" surprise packing checks, complaints from the last 30 days with timelines. | Passed | Browser |
 | DV-09 | Order now. | Order button disabled until an item is added. Total shown. Success screen says it is a demo. | Passed | Browser |
 | DV-10 | Open News. | Five real reports worded as reported, each with a source link that opens in a new tab. A note says they are separate from the sample restaurants. | Passed | Browser |
 | DV-11 | Report a problem with nothing chosen, then with a category only. | Error messages ask for the category, then for the seal answer. | Passed | Browser |
@@ -148,7 +148,7 @@ By default a demo photo applies the result the real AI gave that exact image (se
 | DM-02 | In dining, pick each untidy demo image and the two bad inputs. | Every tile turns amber (Retake), labelled "Demo photo". | Passed (7 of 7) | Browser |
 | DM-03 | In delivery, pick each tidy and untidy demo image (seals, bags, hot and cold). | Tidy green, untidy amber, labelled "Demo photo". | Passed (6 of 6) | Browser |
 | DM-04 | Do the whole journey with demo photos: five tidy dining photos, fridge 3.5, OTP 1234. | "Complete verification with OTP" enables, and the diner page shows "Verified today" and "Last verified: just now". | Passed | Browser |
-| DM-05 | In delivery, pick the three tidy setup photos and confirm, then answer a pack check with the untidy and then the tidy demo photo. | Setup confirmed and diner delivery page updates. Untidy pack photo refused with the reason. Tidy one counts, and the diner's "n of 3" goes up. | Passed | Browser |
+| DM-05 | In delivery, pick the three tidy setup photos and confirm, then answer a packing check with the untidy and then the tidy demo photo. | Setup confirmed and diner delivery page updates. Untidy pack photo refused with the reason. Tidy one counts, and the diner's "n of 3" goes up. | Passed | Browser |
 | DM-07 | With the live switch on, make every AI call fail, then use a tidy and an untidy demo photo. | The saved result is used instead: tidy green, untidy amber, labelled "Demo photo". Never an error. | Passed | Browser (simulated outage) |
 | DM-08 | Use Take photo with the switch off. | Always the live AI, labelled "Live AI check". | Passed (earlier tests; the code path is unchanged) | Real AI |
 

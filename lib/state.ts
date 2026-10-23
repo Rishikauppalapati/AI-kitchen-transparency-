@@ -17,7 +17,7 @@ const MAX_NOTICES = 30;
 export const SHIFTS = ["11:30 AM", "6:30 PM"] as const;
 export type Shift = (typeof SHIFTS)[number];
 export const PACK_SECONDS = 600; // 10 minutes to answer a random pack check
-export const PACK_PER_DAY = 3;
+export const PACK_PER_DAY = 2;
 export const FLAG_AT = 3; // non-passing attempts on one tile before "Flagged for review"
 export const COMPLAINT_DAYS = 30;
 
@@ -198,7 +198,7 @@ export interface ScheduleRow {
   status: ScheduleStatus;
 }
 
-// Seven check-ins a day. The first dining sign-off of the day counts as opening, the second as closing.
+// Six check-ins a day. The first dining sign-off of the day counts as opening, the second as closing.
 export function schedule(rd: RestaurantData, now: number): ScheduleRow[] {
   const signoffs = rd.diningSignoffs.filter((t) => sameDay(t, now)).length;
   const setups = new Set(rd.setupConfirmed.filter((s) => sameDay(s.at, now)).map((s) => s.shift));
@@ -209,10 +209,9 @@ export function schedule(rd: RestaurantData, now: number): ScheduleRow[] {
   return [
     { id: "dine-open", label: "Dining opening check", when: "9:00 AM", kind: "dining", status: st(signoffs >= 1) },
     { id: "setup-am", label: "Delivery shift setup", when: "11:30 AM", kind: "delivery", status: st(setups.has("11:30 AM")) },
-    { id: "pack-1", label: "Random pack check", when: "12 to 2 PM", kind: "delivery", status: pack(0) },
-    { id: "pack-2", label: "Random pack check", when: "12 to 2 PM", kind: "delivery", status: pack(1) },
+    { id: "pack-1", label: "Surprise packing check", when: "12 to 2 PM", kind: "delivery", status: pack(0) },
     { id: "setup-pm", label: "Delivery shift setup", when: "6:30 PM", kind: "delivery", status: st(setups.has("6:30 PM")) },
-    { id: "pack-3", label: "Random pack check", when: "7 to 9 PM", kind: "delivery", status: pack(2) },
+    { id: "pack-2", label: "Surprise packing check", when: "7 to 9 PM", kind: "delivery", status: pack(1) },
     { id: "dine-close", label: "Dining closing check", when: "10:30 PM", kind: "dining", status: st(signoffs >= 2) },
   ];
 }
@@ -275,7 +274,7 @@ function expirePack(rd: RestaurantData, now: number): RestaurantData {
   };
 }
 
-// A random pack check starts a 10-minute countdown. Null when one can't start (one is running, or all three are done).
+// A random pack check starts a 10-minute countdown. Null when one can't start (one is running, or both are done).
 function startPackCheck(rd: RestaurantData, now: number): RestaurantData | null {
   const live = expirePack(rd, now);
   const { results } = packToday(live, now);
@@ -442,7 +441,7 @@ export function reducer(state: AppData | null, action: Action): AppData | null {
               const live = expirePack(rd, action.now);
               if (packToday(live, ts).results.length >= PACK_PER_DAY) continue;
               rd = addNotice({ ...live, packChecks: [...live.packChecks, { at: ranOutAt, result: "missed" }] }, slot, key, ranOutAt, {
-                title: "Random pack check missed",
+                title: "Surprise packing check missed",
                 body: "No photo was taken within 10 minutes.",
               });
               fired = true;

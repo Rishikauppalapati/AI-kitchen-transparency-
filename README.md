@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. Use the round demo button (bottom right) to switch between Manager and Diner, pick a restaurant, fast-forward the demo clock, trigger a random pack check, or reset the demo.
+Open http://localhost:3000. Use the round demo button (bottom right) to switch between Manager and Diner, pick a restaurant, fast-forward the demo clock, trigger a surprise packing check, or reset the demo.
 
 ## How it works
 
@@ -103,7 +103,7 @@ The full list of test cases, with steps, expected results and outcomes, is in [d
 | T4 All six green plus OTP 1234 updates the diner page | Yes (production build) |
 | T5 Three failed attempts raise "Flagged for review" | Yes, manager side only |
 | T6 Fast-forward makes the diner page stale | Yes |
-| T7 Delivery setup and pack checks; a failed setup changes nothing | Yes |
+| T7 Delivery setup and surprise packing checks; a failed setup changes nothing | Yes |
 | T8 The three raid states | Yes |
 | T9 Not-a-kitchen, a PDF and an oversized file | Yes, clear message, nothing changes |
 | T10 The key appears nowhere except `.env.local` | Yes: project files, production build, downloaded files, API responses, headers and git history |

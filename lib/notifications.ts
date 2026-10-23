@@ -24,10 +24,9 @@ export const SLOTS: Slot[] = [
   { id: "dining-open-due", kind: "due", label: "Opening: due 9:00", title: "Time for the dining opening check", body: DINING_BODY, target: "dining", minutes: 9 * 60 },
   { id: "dining-open-late", kind: "late", label: "Opening: follow-up 9:30", title: "Opening check not done yet", body: "It was due at 9:00 AM. Please do it now.", target: "dining", minutes: 9 * 60 + 30 },
   { id: "setup-am", kind: "setup", label: "Delivery setup 11:30 AM", title: "Delivery shift setup", body: "Three photo checks before the lunch rush.", target: "delivery", minutes: 11 * 60 + 30 },
-  { id: "pack-1", kind: "pack", label: "Random pack check", title: "Random pack check", body: "Photograph the next packed order. You have 10 minutes.", target: "delivery", window: [12 * 60, 14 * 60] },
-  { id: "pack-2", kind: "pack", label: "Random pack check", title: "Random pack check", body: "Photograph the next packed order. You have 10 minutes.", target: "delivery", window: [12 * 60, 14 * 60] },
+  { id: "pack-1", kind: "pack", label: "Surprise packing check", title: "Surprise packing check", body: "Photograph the next order you pack, to show it leaves sealed and clean. You have 10 minutes.", target: "delivery", window: [12 * 60, 14 * 60] },
   { id: "setup-pm", kind: "setup", label: "Delivery setup 6:30 PM", title: "Delivery shift setup", body: "Three photo checks before the dinner rush.", target: "delivery", minutes: 18 * 60 + 30 },
-  { id: "pack-3", kind: "pack", label: "Random pack check", title: "Random pack check", body: "Photograph the next packed order. You have 10 minutes.", target: "delivery", window: [19 * 60, 21 * 60] },
+  { id: "pack-2", kind: "pack", label: "Surprise packing check", title: "Surprise packing check", body: "Photograph the next order you pack, to show it leaves sealed and clean. You have 10 minutes.", target: "delivery", window: [19 * 60, 21 * 60] },
   { id: "dining-close-remind", kind: "reminder", label: "Closing: 30 min before", title: "Dining closing check in 30 minutes", body: "Due at 10:30 PM. " + DINING_BODY, target: "dining", minutes: 22 * 60 },
   { id: "dining-close-due", kind: "due", label: "Closing: due 10:30", title: "Time for the dining closing check", body: DINING_BODY, target: "dining", minutes: 22 * 60 + 30 },
   { id: "dining-close-late", kind: "late", label: "Closing: follow-up 11:00", title: "Closing check not done yet", body: "It was due at 10:30 PM. Please do it now.", target: "dining", minutes: 23 * 60 },
@@ -48,7 +47,7 @@ export const AUTO_SEQUENCE = [
   "dining-close-late",
 ];
 
-// The buttons in the demo panel (the three random pack checks share one button).
+// The buttons in the demo panel (the two surprise packing checks share one button).
 export const MANUAL_SLOTS = SLOTS.filter((s) => s.kind !== "pack");
 
 const dayStart = (ms: number) => {

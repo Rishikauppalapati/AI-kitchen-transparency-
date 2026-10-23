@@ -116,7 +116,10 @@ export default function DeliveryCheck({
 
         {/* Layer 2 */}
         <section className="card block" aria-labelledby="pack-title">
-          <h2 id="pack-title">2. Random pack check</h2>
+          <h2 id="pack-title">2. Surprise packing check</h2>
+          <p className="muted" style={{ margin: "0 0 10px" }}>
+            At a surprise time, the app asks you to photograph the next order you pack. It shows diners that orders leave sealed and clean.
+          </p>
           <ul className="schedule">
             {slots.map((s, i) => (
               <li key={i}>
@@ -152,7 +155,7 @@ export default function DeliveryCheck({
           ) : (
             <p className="muted" style={{ marginTop: 10 }}>
               {today.results.length >= PACK_PER_DAY
-                ? "All three checks for today are finished."
+                ? "Both checks for today are finished."
                 : "The next check arrives at a random time. Use the demo controls to trigger one."}
             </p>
           )}
@@ -179,7 +182,7 @@ export default function DeliveryCheck({
       {photoFor && (
         <PhotoSheet
           checkId={photoFor}
-          title={photoFor === "random_pack" ? "Pack check photo" : (SETUP_CHECKS.find((c) => c.id === photoFor)?.label ?? "Photo check")}
+          title={photoFor === "random_pack" ? "Packing check photo" : (SETUP_CHECKS.find((c) => c.id === photoFor)?.label ?? "Photo check")}
           showExpected={showExpected}
           liveDemo={liveDemo}
           onResult={(r, via) => {
